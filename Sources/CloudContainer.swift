@@ -16,6 +16,11 @@
 
 import Foundation
 
+public enum CloudResult<T: RemoteRecord> {
+    case success([T], (() -> ())?)
+    case failure
+}
+
 public class CloudContainer {
     private static let baseURL = URL(string: "https://api.apple-cloudkit.com")!
 
@@ -32,7 +37,7 @@ public class CloudContainer {
         self.fetch = fetch
     }
     
-    public func save<T: RemoteRecord>(records: [RemoteRecord], in database: CloudDatabase = .public, completion: (([T]) -> ())) {
+    public func save<T: RemoteRecord>(records: [RemoteRecord], in database: CloudDatabase = .public, completion: @escaping ((CloudResult<T>) -> ())) {
         var operations = [[String: AnyObject]]()
         for r in records {
             operations.append(r.toOperation())
@@ -41,7 +46,7 @@ public class CloudContainer {
         send(body: body, to: "/records/modify", in: database, completion: completion)
     }
     
-    public func fetch<T: RemoteRecord>(limit: Int? = nil, filter: Filter? = nil, sort: Sort? = nil, in database: CloudDatabase = .public, completion: (([T]) -> ())) {
+    public func fetch<T: RemoteRecord>(limit: Int? = nil, filter: Filter? = nil, sort: Sort? = nil, in database: CloudDatabase = .public, completion: @escaping ((CloudResult<T>) -> ())) {
         var query: [String: AnyObject] = ["recordType": T.recordType as AnyObject]
         if let f = filter, let params = f.dictionary() {
             query["filterBy"] = params as AnyObject
@@ -64,18 +69,18 @@ public class CloudContainer {
         send(body: body, to: "/records/query", in: database, completion: completion)
     }
     
-    public func fetchFirst<T: RemoteRecord>(filter: Filter? = nil, sort: Sort? = nil, in database: CloudDatabase = .public, completion: (([T]) -> ())) {
+    public func fetchFirst<T: RemoteRecord>(filter: Filter? = nil, sort: Sort? = nil, in database: CloudDatabase = .public, completion: @escaping ((CloudResult<T>) -> ())) {
         fetch(limit: 1, filter: filter, sort: sort, in: database, completion: completion)
     }
     
-    private func send<T: RemoteRecord>(body: [String: AnyObject], to path: String, in database: CloudDatabase, completion: (([T]) -> ())) {
+    private func send<T: RemoteRecord>(body: [String: AnyObject], to path: String, in database: CloudDatabase, completion: @escaping ((CloudResult<T>) -> ())) {
         let fullQueryPath = "/database/1/\(container)/\(env.rawValue)/\(database.rawValue)\(path)"
         let bodyData = try! JSONSerialization.data(withJSONObject: body)
         
         POST(to: fullQueryPath, body: bodyData, completion: completion)
     }
     
-    public func POST<T: RemoteRecord>(to path: String, body data: Data, completion: (([T]) -> ())) {
+    private func POST<T: RemoteRecord>(to path: String, body data: Data, completion: @escaping ((CloudResult<T>) -> ())) {
         var components = URLComponents(url: CloudContainer.baseURL, resolvingAgainstBaseURL: true)!
         components.path = components.path.appending(path)
         
@@ -95,19 +100,23 @@ public class CloudContainer {
         request.httpBody = data
         
         Logging.log("Headers: \(request.allHTTPHeaderFields)")
-        
+
+        let cursor = Cursor<T>(path: path, data: data, handler: nil, continuation: nil)
+
         fetch.fetch(request: request as URLRequest) {
             data, response, error in
-            
-            if let data = data, let string = String(data: data, encoding: .utf8) {
-                Logging.log(string)
-            }
-            
-            self.handleResult(data: data, response: response, error: error, completion: completion)
+                        
+            self.handleResult(data: data, response: response, error: error, cursor: cursor, completion: completion)
         }
     }
     
-    private func handleResult<T: RemoteRecord>(data: Data?, response: URLResponse?, error: Error?, completion: (([T]) -> ())) {
+    private func continueWith<T: RemoteRecord>(cursor: Cursor<T>) {
+        Logging.log("Continue with \(cursor)")
+        let data = cursor.dataWithContinuation()
+        POST(to: cursor.path, body: data, completion: cursor.handler!)
+    }
+    
+    private func handleResult<T: RemoteRecord>(data: Data?, response: URLResponse?, error: Error?, cursor: Cursor<T>, completion: @escaping ((CloudResult<T>) -> ())) {
         guard let responseData = data else {
             Logging.log("No response data")
             return
@@ -121,6 +130,17 @@ public class CloudContainer {
         guard let records = responseJSON["records"] as? [[String: AnyObject]] else {
             Logging.log("No records in response")
             return
+        }
+        
+        let continuationMarker = responseJSON["continuationMarker"] as? String
+        var continuation: (() -> ())? = nil
+        if let marker = continuationMarker {
+            var used = cursor
+            used.continuation = marker
+            used.handler = completion
+            continuation = {
+                self.continueWith(cursor: used)
+            }
         }
         
         Logging.log("Parsing \(records.count) records")
@@ -138,7 +158,8 @@ public class CloudContainer {
         }
         
         Logging.log("Loaded \(result.count)")
-        completion(result)
+        
+        completion(.success(result, continuation))
     }
 
 }
