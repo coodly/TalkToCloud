@@ -26,7 +26,7 @@ enum OperationType: String {
 public protocol RemoteRecord {
     static var recordType: String { get }
     var recordName: String? { get set }
-    var proposedName: String? { get }
+    var proposedName: String? { get set }
     var recordChangeTag: String? { get set }
     
     init()
