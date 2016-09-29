@@ -114,6 +114,16 @@ public extension Dictionary {
         return valueDict["value"]
     }
     
+    func date(fromField name: String) -> Date? {
+        guard let milliseconds = value(fromField: name) as? Double else {
+            return nil
+        }
+        
+        let seconds: TimeInterval = milliseconds / 1000.0
+        
+        return Date(timeIntervalSince1970: seconds)
+    }
+    
     func reference(fromField name: String) -> RemoteReference? {
         guard let value = value(fromField: name) as? [String: String] else {
             return nil
