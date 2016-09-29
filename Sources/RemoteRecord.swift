@@ -66,9 +66,13 @@ extension RemoteRecord {
 
             if let value = child.value as? String {
                 result[child.label!] = ["value": value] as AnyObject
+            } else if let value = child.value as? Int {
+                result[child.label!] = ["value": value] as AnyObject
             } else if let value = child.value as? Date {
                 result[child.label!] = ["value": value.milliseconds()] as AnyObject
             } else if let value = child.value as? [String] {
+                result[child.label!] = ["value": value] as AnyObject
+            } else if let value = child.value as? [Int] {
                 result[child.label!] = ["value": value] as AnyObject
             } else if let remote = (child.value as AnyObject) as? RemoteReference {
                 let value = remote.dictionary()
