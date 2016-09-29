@@ -127,6 +127,11 @@ public class CloudContainer {
             return
         }
         
+        if let errorCode = responseJSON["serverErrorCode"] as? String, let reason = responseJSON["reason"] {
+            Logging.log("\(errorCode) - \(reason)")
+            return
+        }
+        
         guard let records = responseJSON["records"] as? [[String: AnyObject]] else {
             Logging.log("No records in response")
             return
