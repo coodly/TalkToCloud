@@ -48,8 +48,8 @@ public class CloudContainer {
     
     public func fetch<T: RemoteRecord>(limit: Int? = nil, filter: Filter? = nil, sort: Sort? = nil, in database: CloudDatabase = .public, completion: @escaping ((CloudResult<T>) -> ())) {
         var query: [String: AnyObject] = ["recordType": T.recordType as AnyObject]
-        if let f = filter, let params = f.dictionary() {
-            query["filterBy"] = params as AnyObject
+        if let f = filter, let params = f.json() {
+            query["filterBy"] = params
         }
         
         if let sort = sort {

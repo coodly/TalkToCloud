@@ -30,8 +30,9 @@ public enum Environment: String {
 public enum Filter {
     case equals(String, AnyObject)
     case `in`(String, [AnyObject])
+    case and([Filter])
     
-    func dictionary() -> [String: AnyObject]? {
+    func json() -> AnyObject? {
         var method: String?
         var fieldName: String?
         var recordValue: AnyObject?
@@ -44,13 +45,22 @@ public enum Filter {
             method = "IN"
             fieldName = key
             recordValue = values as AnyObject
+        case .and(let filters):
+            var combined = [AnyObject]()
+            for f in filters {
+                if let json = f.json() {
+                    combined.append(json)
+                }
+            }
+            
+            return combined as AnyObject
         }
         
         guard let comparator = method, let field = fieldName, let record = recordValue else {
             return nil
         }
         
-        return ["comparator": comparator as AnyObject, "fieldName": field as AnyObject, "fieldValue": ["value": record] as AnyObject]
+        return ["comparator": comparator, "fieldName": field , "fieldValue": ["value": record]] as AnyObject
     }
     
     private func record(from: Any) -> [String: AnyObject]? {

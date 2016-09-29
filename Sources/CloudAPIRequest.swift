@@ -57,7 +57,7 @@ class CloudAPIRequest<T: RemoteRecord>: NetworkRequest, CloudRequest, APIKeyCons
     
     public func fetch(limit: Int? = nil, filter: Filter? = nil, sort: Sort? = nil, in container: String, env: Environment = .production, database: CloudDatabase = .private) {
         var query: [String: AnyObject] = ["recordType": T.recordType as AnyObject]
-        if let f = filter, let params = f.dictionary() {
+        if let f = filter, let params = f.json() {
             query["filterBy"] = params as AnyObject
         }
         
