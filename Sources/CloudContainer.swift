@@ -46,7 +46,7 @@ public class CloudContainer {
         send(body: body, to: "/records/modify", in: database, completion: completion)
     }
     
-    public func fetch<T: RemoteRecord>(limit: Int? = nil, filter: Filter? = nil, sort: Sort? = nil, in database: CloudDatabase = .public, completion: @escaping ((CloudResult<T>) -> ())) {
+    public func fetch<T: RemoteRecord>(limit: Int? = nil, desiredKeys: [String]? = nil, filter: Filter? = nil, sort: Sort? = nil, in database: CloudDatabase = .public, completion: @escaping ((CloudResult<T>) -> ())) {
         var query: [String: AnyObject] = ["recordType": T.recordType as AnyObject]
         if let f = filter, let params = f.json() {
             query["filterBy"] = params
@@ -65,12 +65,15 @@ public class CloudContainer {
         if let limit = limit {
             body["resultsLimit"] = limit as AnyObject
         }
+        if let keys = desiredKeys {
+            body["desiredKeys"] = keys as AnyObject
+        }
         
         send(body: body, to: "/records/query", in: database, completion: completion)
     }
     
-    public func fetchFirst<T: RemoteRecord>(filter: Filter? = nil, sort: Sort? = nil, in database: CloudDatabase = .public, completion: @escaping ((CloudResult<T>) -> ())) {
-        fetch(limit: 1, filter: filter, sort: sort, in: database, completion: completion)
+    public func fetchFirst<T: RemoteRecord>(desiredKeys: [String]? = nil, filter: Filter? = nil, sort: Sort? = nil, in database: CloudDatabase = .public, completion: @escaping ((CloudResult<T>) -> ())) {
+        fetch(limit: 1, desiredKeys: desiredKeys, filter: filter, sort: sort, in: database, completion: completion)
     }
     
     private func send<T: RemoteRecord>(body: [String: AnyObject], to path: String, in database: CloudDatabase, completion: @escaping ((CloudResult<T>) -> ())) {
