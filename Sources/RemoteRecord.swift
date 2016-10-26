@@ -57,6 +57,11 @@ extension RemoteRecord {
     }
     
     func fields() -> [String: AnyObject] {
+        if let raw = self as? RawFieldsCopy {
+            Logging.log("Using raw fields")
+            return raw.rawFields
+        }
+        
         var result = [String: AnyObject]()
         let mirror = Mirror(reflecting: self)
         for child in mirror.children {
