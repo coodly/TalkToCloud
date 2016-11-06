@@ -17,7 +17,7 @@
 import Foundation
 
 public extension URLSession {
-    func synchronousDataWithRequest(request: URLRequest, completionHandler: (Data?, URLResponse?, Error?) -> Void) {
+    public func synchronousDataWithRequest(request: URLRequest, completionHandler: (Data?, URLResponse?, Error?) -> Void) {
         var data: Data?
         var response: URLResponse?
         var error: Error?
@@ -54,6 +54,7 @@ public class Commander<C: Command> {
     
     public func run() {
         Logging.log("Run \(String(describing: C.self))")
+        Logging.log("Arguments: \(arguments)")
         let command = C()
         
         let fetch = Fetch()
@@ -71,7 +72,17 @@ public class Commander<C: Command> {
             consumer.productionContainer = config.productionContainer(with: fetch)
         }
         
-        command.execute(with: arguments)
+        var remaining = arguments
+        remaining.removeFirst()
+        let toRemove = ["--production", "--development"]
+        for remove in toRemove {
+            if let index = remaining.index(of: remove) {
+                remaining.remove(at: index)
+            }
+        }
+        
+        Logging.log("Command arguments: \(remaining)")
+        command.execute(with: remaining)
     }
     
     private func containerFromArguments(config: Configuration, fetch: NetworkFetch) -> CloudContainer? {
