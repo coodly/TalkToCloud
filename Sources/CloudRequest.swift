@@ -29,6 +29,7 @@ public enum Environment: String {
 
 public enum Filter {
     case equals(String, AnyObject)
+    case notEquals(String, AnyObject)
     case `in`(String, [AnyObject])
     case and([Filter])
     
@@ -39,6 +40,10 @@ public enum Filter {
         switch self {
         case .equals(let key, let value):
             method = "EQUALS"
+            fieldName = key
+            recordValue = value
+        case .notEquals(let key, let value):
+            method = "NOT_EQUALS"
             fieldName = key
             recordValue = value
         case .in(let key, let values):
