@@ -28,6 +28,26 @@ public class PrivateKeyAuthenticator: Authenticator {
     
     private let apiKeyID: String
     private let pathToPEM: String
+    private lazy var privateKey: SecKey = {
+        var importedItems: CFArray?
+
+        let pemData = try! Data(contentsOf: URL(fileURLWithPath: self.pathToPEM))
+        let err = SecItemImport(
+            pemData as CFData,
+            "pem" as CFString,
+            nil,
+            nil,
+            [],
+            nil,
+            nil,
+            &importedItems
+        )
+        assert(err == errSecSuccess)
+        
+        let importedKeys = importedItems as! [SecKeychainItem]
+        assert(importedKeys.count == 1)
+        return (importedKeys[0] as AnyObject as! SecKey)
+    }()
     
     public init(apiKeyID: String, pathToPEM: String) {
         self.apiKeyID = apiKeyID
@@ -57,10 +77,15 @@ public class PrivateKeyAuthenticator: Authenticator {
         
         return sig
     }
-    
-    // TODO jaanus: not sure if this is extra mad or clever...
-    // Do it using proper way in future |-(
+
+    // Inspired by https://github.com/ooper-shlab/CryptoCompatibility-Swift
     private func signature(of string: String) -> String {
+        if #available(OSX 10.12, *) {
+            return createSignature(of: string)
+        } else {
+            // Fallback on earlier versions
+        }
+
         let fileName = "signed.txt"
         do {
             try FileManager.default.removeItem(atPath: fileName)
@@ -82,6 +107,28 @@ public class PrivateKeyAuthenticator: Authenticator {
         let split = output.components(separatedBy: " ")
         let last = split.last!.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
         return last.dataFromHexadecimalString()!.base64EncodedString()
+    }
+    
+    
+    @available(OSX 10.12, *)
+    private func createSignature(of string: String) -> String {
+        let inputData = string.data(using: .utf8)!
+        
+        var digest = Data(count: Int(CC_SHA256_DIGEST_LENGTH))
+        inputData.withUnsafeBytes {bytes in
+            digest.withUnsafeMutableBytes {mutableBytes in
+                _ = CC_SHA256(bytes, CC_LONG(inputData.count), mutableBytes)
+            }
+        }
+        
+        var umErrorCF: Unmanaged<CFError>? = nil
+        let resultData = SecKeyCreateSignature(
+            self.privateKey,
+            SecKeyAlgorithm.ecdsaSignatureDigestX962SHA256,
+            digest as CFData,
+            &umErrorCF)
+        let data = resultData as! Data
+        return data.base64EncodedString()
     }
     
     private func hash(of body: Data) -> String {
