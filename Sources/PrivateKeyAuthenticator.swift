@@ -28,6 +28,7 @@ public class PrivateKeyAuthenticator: Authenticator {
     
     private let apiKeyID: String
     private let pathToPEM: String
+    
     private lazy var privateKey: SecKey = {
         var importedItems: CFArray?
 
@@ -83,30 +84,32 @@ public class PrivateKeyAuthenticator: Authenticator {
         if #available(OSX 10.12, *) {
             return createSignature(of: string)
         } else {
-            // Fallback on earlier versions
+            return transformSign(string)
         }
+    }
+    
+    private func transformSign(_ string: String) -> String {
+        let inputData = string.data(using: .utf8)!
+        
+        var umErrorCF: Unmanaged<CFError>?
+        
+        guard let transform = SecSignTransformCreate(self.privateKey, &umErrorCF) else {
+            fatalError()
+        }
+        
+        let setTypeSuccess = SecTransformSetAttribute(transform, kSecDigestTypeAttribute, kSecDigestSHA2, nil)
+        assert(setTypeSuccess)
+        
+        let setLengthSuccess = SecTransformSetAttribute(transform, kSecDigestLengthAttribute, 256 as CFNumber, nil)
+        assert(setLengthSuccess)
 
-        let fileName = "signed.txt"
-        do {
-            try FileManager.default.removeItem(atPath: fileName)
-        } catch {}
+        let addSuccess = SecTransformSetAttribute(transform, kSecTransformInputAttributeName, inputData as CFData, &umErrorCF)
+        assert(addSuccess)
         
-        let signedData = string.data(using: String.Encoding.utf8)!
-        try! signedData.write(to: URL(fileURLWithPath: fileName))
+        let resultData = SecTransformExecute(transform, &umErrorCF)
+        assert(CFGetTypeID(resultData) == CFDataGetTypeID())
         
-        let task = Process()
-        task.launchPath = "/usr/local/bin/openssl"
-        task.arguments = ["dgst", "-sha256", "-hex", "-sign", pathToPEM, fileName]
-        
-        let pipe = Pipe()
-        task.standardOutput = pipe
-        task.launch()
-        
-        let data = pipe.fileHandleForReading.readDataToEndOfFile()
-        let output = String(data: data, encoding: String.Encoding.utf8)!
-        let split = output.components(separatedBy: " ")
-        let last = split.last!.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
-        return last.dataFromHexadecimalString()!.base64EncodedString()
+        return (resultData as! Data).base64EncodedString()
     }
     
     
