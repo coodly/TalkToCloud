@@ -25,9 +25,9 @@ let package = Package(
 
 Save your credentials in *Config* folder using following naming:
 
- # Containing Key ID from Dashboard -> API Access -> Server-to-Server keys  
+//# Containing Key ID from Dashboard -> API Access -> Server-to-Server keys  
 *container.id*-*environment*.key  
- # Private key file  
+//# Private key file  
 *container.id*-*environment*.pem
  
 Create task conforming to *Command* protocol.
