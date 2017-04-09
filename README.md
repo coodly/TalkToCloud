@@ -25,11 +25,11 @@ let package = Package(
 
 Save your credentials in *Config* folder using following naming:
 
-//# Containing Key ID from Dashboard -> API Access -> Server-to-Server keys  
-*container.id*-*environment*.key  
-//# Private key file  
-*container.id*-*environment*.pem
- 
+    .
+    ├── Config
+    │   ├── com.coodly.moviez-development.key  # Key ID from Dashboard -> API Access -> Server-to-Server keys  
+    │   ├── com.coodly.moviez-development.pen  # Private key
+
 Create task conforming to *Command* protocol.
 
 Indicate used container by using protocols *ProductionConsumer* and/or *DevelopmentConsumer*.
