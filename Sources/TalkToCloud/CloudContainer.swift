@@ -37,7 +37,7 @@ public class CloudContainer {
         self.fetch = fetch
     }
     
-    public func save<T: RemoteRecord>(records: [RemoteRecord], in database: CloudDatabase = .public, completion: @escaping ((CloudResult<T>) -> ())) {
+    public func save<T>(records: [RemoteRecord], in database: CloudDatabase = .public, completion: @escaping ((CloudResult<T>) -> ())) {
         var operations = [[String: AnyObject]]()
         for r in records {
             operations.append(r.toOperation())
@@ -46,7 +46,7 @@ public class CloudContainer {
         send(body: body, to: "/records/modify", in: database, completion: completion)
     }
     
-    public func fetch<T: RemoteRecord>(limit: Int? = nil, desiredKeys: [String]? = nil, filter: Filter? = nil, sort: Sort? = nil, in database: CloudDatabase = .public, completion: @escaping ((CloudResult<T>) -> ())) {
+    public func fetch<T>(limit: Int? = nil, desiredKeys: [String]? = nil, filter: Filter? = nil, sort: Sort? = nil, in database: CloudDatabase = .public, completion: @escaping ((CloudResult<T>) -> ())) {
         var query: [String: AnyObject] = ["recordType": T.recordType as AnyObject]
         if let f = filter, let params = f.json() {
             query["filterBy"] = params
@@ -72,18 +72,18 @@ public class CloudContainer {
         send(body: body, to: "/records/query", in: database, completion: completion)
     }
     
-    public func fetchFirst<T: RemoteRecord>(desiredKeys: [String]? = nil, filter: Filter? = nil, sort: Sort? = nil, in database: CloudDatabase = .public, completion: @escaping ((CloudResult<T>) -> ())) {
+    public func fetchFirst<T>(desiredKeys: [String]? = nil, filter: Filter? = nil, sort: Sort? = nil, in database: CloudDatabase = .public, completion: @escaping ((CloudResult<T>) -> ())) {
         fetch(limit: 1, desiredKeys: desiredKeys, filter: filter, sort: sort, in: database, completion: completion)
     }
     
-    private func send<T: RemoteRecord>(body: [String: AnyObject], to path: String, in database: CloudDatabase, completion: @escaping ((CloudResult<T>) -> ())) {
+    private func send<T>(body: [String: AnyObject], to path: String, in database: CloudDatabase, completion: @escaping ((CloudResult<T>) -> ())) {
         let fullQueryPath = "/database/1/\(container)/\(env.rawValue)/\(database.rawValue)\(path)"
         let bodyData = try! JSONSerialization.data(withJSONObject: body)
         
         POST(to: fullQueryPath, body: bodyData, completion: completion)
     }
     
-    private func POST<T: RemoteRecord>(to path: String, body data: Data, completion: @escaping ((CloudResult<T>) -> ())) {
+    private func POST<T>(to path: String, body data: Data, completion: @escaping ((CloudResult<T>) -> ())) {
         var components = URLComponents(url: CloudContainer.baseURL, resolvingAgainstBaseURL: true)!
         components.path = components.path.appending(path)
         
@@ -102,7 +102,12 @@ public class CloudContainer {
         Logging.log("Attach body \(data.count)")
         request.httpBody = data
         
-        Logging.log("Headers: \(request.allHTTPHeaderFields)")
+        Logging.log("Headers:")
+        request.allHTTPHeaderFields?.forEach() {
+            key, value in
+            
+            Logging.log("\t\(key): \(value)")
+        }
 
         let cursor = Cursor<T>(path: path, data: data, handler: nil, continuation: nil)
 
@@ -113,13 +118,13 @@ public class CloudContainer {
         }
     }
     
-    private func continueWith<T: RemoteRecord>(cursor: Cursor<T>) {
+    private func continueWith<T>(cursor: Cursor<T>) {
         Logging.log("Continue with \(cursor)")
         let data = cursor.dataWithContinuation()
         POST(to: cursor.path, body: data, completion: cursor.handler!)
     }
     
-    private func handleResult<T: RemoteRecord>(data: Data?, response: URLResponse?, error: Error?, cursor: Cursor<T>, completion: @escaping ((CloudResult<T>) -> ())) {
+    private func handleResult<T>(data: Data?, response: URLResponse?, error: Error?, cursor: Cursor<T>, completion: @escaping ((CloudResult<T>) -> ())) {
         guard let responseData = data else {
             Logging.log("No response data")
             return
