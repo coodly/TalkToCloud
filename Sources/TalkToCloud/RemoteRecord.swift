@@ -75,6 +75,8 @@ extension RemoteRecord {
                 result[child.label!] = ["value": value] as AnyObject
             } else if let value = child.value as? Date {
                 result[child.label!] = ["value": value.milliseconds()] as AnyObject
+            } else if let value = child.value as? Double {
+                result[child.label!] = ["value": value] as AnyObject
             } else if let value = child.value as? [String] {
                 result[child.label!] = ["value": value] as AnyObject
             } else if let value = child.value as? [Int] {
