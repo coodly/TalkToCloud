@@ -41,11 +41,11 @@ public enum Filter {
         case .equals(let key, let value):
             method = "EQUALS"
             fieldName = key
-            recordValue = value
+            recordValue = decoded(value)
         case .notEquals(let key, let value):
             method = "NOT_EQUALS"
             fieldName = key
-            recordValue = value
+            recordValue = decoded(value)
         case .in(let key, let values):
             method = "IN"
             fieldName = key
@@ -66,6 +66,14 @@ public enum Filter {
         }
         
         return ["comparator": comparator, "fieldName": field , "fieldValue": ["value": record]] as AnyObject
+    }
+    
+    private func decoded(_ value: AnyObject) -> AnyObject {
+        if let reference = value as? RemoteReference {
+            return reference.dictionary() as AnyObject
+        } else {
+            return value
+        }
     }
     
     private func record(from: Any) -> [String: AnyObject]? {
