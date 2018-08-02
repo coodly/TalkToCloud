@@ -76,6 +76,11 @@ public class CloudContainer {
         fetch(limit: 1, desiredKeys: desiredKeys, filter: filter, sort: sort, in: database, completion: completion)
     }
     
+    public func lookup<T>(recordName: String, in database: CloudDatabase = .public, completion: @escaping ((CloudResult<T>) -> Void)) {
+        let body: [String: AnyObject] = ["records": [["recordName": recordName]] as AnyObject]
+        send(body: body, to: "/records/lookup", in: database, completion: completion)
+    }
+    
     private func send<T>(body: [String: AnyObject], to path: String, in database: CloudDatabase, completion: @escaping ((CloudResult<T>) -> ())) {
         let fullQueryPath = "/database/1/\(container)/\(env.rawValue)/\(database.rawValue)\(path)"
         let bodyData = try! JSONSerialization.data(withJSONObject: body)
