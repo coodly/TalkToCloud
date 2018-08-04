@@ -21,9 +21,16 @@ public enum CloudResult<T: RemoteRecord> {
     case failure
 }
 
+public enum CloudCodedResult<T: Decodable> {
+    case success(T, (() -> ())?)
+    case failure
+}
+
 public class CloudContainer {
     private static let baseURL = URL(string: "https://api.apple-cloudkit.com")!
 
+    private lazy var encoder = JSONEncoder()
+    private lazy var decoder = JSONDecoder()
     
     private let container: String
     private let env: Environment
@@ -106,6 +113,9 @@ public class CloudContainer {
         
         Logging.log("Attach body \(data.count)")
         request.httpBody = data
+        if let string = String(data: data, encoding: .utf8) {
+            Logging.log(string)
+        }
         
         Logging.log("Headers:")
         request.allHTTPHeaderFields?.forEach() {
@@ -133,6 +143,10 @@ public class CloudContainer {
         guard let responseData = data else {
             Logging.log("No response data")
             return
+        }
+        
+        if let string = String(data: responseData, encoding: .utf8) {
+            Logging.log(string)
         }
         
         guard let responseJSON = try! JSONSerialization.jsonObject(with: responseData) as? [String: AnyObject] else {
@@ -179,5 +193,165 @@ public class CloudContainer {
         
         completion(.success(result, continuation))
     }
+}
 
+private extension CloudContainer {
+    private func sendCoded<B: Encodable, R: Decodable>(body: B, to path: String, in database: CloudDatabase, completion: @escaping ((CloudCodedResult<R>) -> Void)) {
+        let fullQueryPath = "/database/1/\(container)/\(env.rawValue)/\(database.rawValue)\(path)"
+        guard let bodyData = try? encoder.encode(body) else {
+            Logging.log("Body not encoded")
+            completion(.failure)
+            return
+        }
+        
+        var components = URLComponents(url: CloudContainer.baseURL, resolvingAgainstBaseURL: true)!
+        components.path = components.path.appending(fullQueryPath)
+        
+        let url = components.url!
+        
+        Logging.log("POST to \(url)")
+        
+        let request = NSMutableURLRequest(url: url)
+        request.httpMethod = "POST"
+        
+        let additionalHeaders = auth.signedHeaders(for: bodyData, query: fullQueryPath)
+        for (name, value) in additionalHeaders {
+            request.addValue(value, forHTTPHeaderField: name)
+        }
+        
+        Logging.log("Attach body \(bodyData.count)")
+        request.httpBody = bodyData
+        if let string = String(data: bodyData, encoding: .utf8) {
+            Logging.log(string)
+        }
+        
+        Logging.log("Headers:")
+        request.allHTTPHeaderFields?.forEach() {
+            key, value in
+            
+            Logging.log("\t\(key): \(value)")
+        }
+        
+        fetch.fetch(request: request as URLRequest) {
+            data, response, error in
+            
+            self.handleCodedResult(data: data, response: response, error: error, completion: completion)
+        }
+    }
+    
+    private func handleCodedResult<R: Decodable>(data: Data?, response: URLResponse?, error: Error?, completion: @escaping ((CloudCodedResult<R>) -> ())) {
+        guard let responseData = data else {
+            Logging.log("No response data")
+            return
+        }
+        
+        if let string = String(data: responseData, encoding: .utf8) {
+            Logging.log(string)
+        }
+        
+        guard let result = try? decoder.decode(R.self, from: responseData) else {
+            Logging.log("No decode")
+            completion(.failure)
+            return
+        }
+        
+        completion(.success(result, nil))
+    }
+}
+
+private extension CloudContainer {
+    private func send<R: Decodable>(raw data: Data, to url: URL, completion: @escaping ((CloudCodedResult<R>) -> Void)) {
+        Logging.log("Send raw data to \(url)")
+        let request = NSMutableURLRequest(url: url)
+        request.httpMethod = "POST"
+        request.httpBody = data
+        request.setValue("application/octet-stream", forHTTPHeaderField: "Content-Type")
+        
+        fetch.fetch(request: request as URLRequest) {
+            data, response, error in
+
+            if let error = error {
+                Logging.log(error)
+                completion(.failure)
+                return
+            }
+
+            guard let received = data else {
+                Logging.log("No response data")
+                completion(.failure)
+                return
+            }
+
+            if let string = String(data: received, encoding: .utf8) {
+                Logging.log(string)
+            }
+
+            guard let result = try? self.decoder.decode(R.self, from: received) else {
+                Logging.log("Response not decoded")
+                completion(.failure)
+                return
+            }
+            
+            completion(.success(result, nil))
+        }
+    }
+}
+
+public extension CloudContainer {
+    public func upload<T>(asset: AssetUpload, attachedTo record: T, in database: CloudDatabase = .public, completion: @escaping ((CloudResult<T>) -> ())) {
+        Logging.log("Upload asset")
+        
+        guard let target = createAssetRecord(asset: asset, in: database) else {
+            Logging.log("No target created")
+            completion(.failure)
+            return
+        }
+        
+        Logging.log("Record created")
+        
+        guard let definition = uploadAssetData(asset.data, with: target) else {
+            Logging.log("Binary upload not done")
+            completion(.failure)
+            return
+        }
+        
+        Logging.log("Binary uploaded")
+    }
+    
+    private func createAssetRecord(asset: AssetUpload, in database: CloudDatabase) -> AssetUploadTarget? {
+        let uploadCreate = AssetUploadCreate(asset: asset)
+        
+        var target: AssetUploadTarget? = nil
+        let createHandler: ((CloudCodedResult<AssetCreateResponse>) -> Void) = {
+            result in
+            
+            switch result {
+            case .failure:
+                target = nil
+            case .success(let result, _):
+                target = result.tokens.first
+            }
+        }
+        
+        sendCoded(body: uploadCreate, to: "/assets/upload", in: database, completion: createHandler)
+        
+        return target
+    }
+    
+    private func uploadAssetData(_ data: Data, with target: AssetUploadTarget) -> AssetFileDefinition? {
+        var definition: AssetFileDefinition? = nil
+        let sendHandler: ((CloudCodedResult<AssetUploadResponse>) -> Void) = {
+            result in
+            
+            switch result {
+            case .failure:
+                Logging.log("Data upload failed")
+            case .success(let def, _):
+                definition = def.singleFile
+            }
+        }
+        send(raw: data, to: target.url, completion: sendHandler)
+
+        return definition
+    }
 }
