@@ -86,6 +86,9 @@ extension RemoteRecord {
             } else if let remote = (child.value as AnyObject) as? RemoteReference {
                 let value = remote.dictionary()
                 result[child.label!] = ["value": value] as AnyObject
+            } else if let asset = child.value as? AssetFileDefinition {
+                let value = asset.dictionary()
+                result[child.label!] = ["value": value] as AnyObject
             } else {
                 Logging.log("Could not cast \(child)")
             }

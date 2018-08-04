@@ -298,7 +298,7 @@ private extension CloudContainer {
 }
 
 public extension CloudContainer {
-    public func upload<T>(asset: AssetUpload, attachedTo record: T, in database: CloudDatabase = .public, completion: @escaping ((CloudResult<T>) -> ())) {
+    public func upload<T: RemoteRecord & AssetAttached>(asset: AssetUpload, attachedTo record: T, in database: CloudDatabase = .public, completion: @escaping ((CloudResult<T>) -> ())) {
         Logging.log("Upload asset")
         
         guard let target = createAssetRecord(asset: asset, in: database) else {
@@ -316,6 +316,11 @@ public extension CloudContainer {
         }
         
         Logging.log("Binary uploaded")
+        var updated = record
+        updated.attach(definition, fieldName: asset.fieldName)
+        
+        Logging.log("Save modified record")        
+        save(records: [updated], completion: completion)
     }
     
     private func createAssetRecord(asset: AssetUpload, in database: CloudDatabase) -> AssetUploadTarget? {

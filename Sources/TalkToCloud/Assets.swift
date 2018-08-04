@@ -43,10 +43,23 @@ internal struct AssetUploadResponse: Decodable {
     internal let singleFile: AssetFileDefinition
 }
 
-internal struct AssetFileDefinition: Decodable {
+public struct AssetFileDefinition: Decodable {
     let wrappingKey: String?
     let fileChecksum: String
     let receipt: String
     let referenceChecksum: String?
     let size: Int
+    
+    internal func dictionary() -> [String: AnyObject] {
+        var result = [String: AnyObject]()
+        let mirror = Mirror(reflecting: self)
+        for child in mirror.children {
+            if let value = child.value as? String {
+                result[child.label!] = value as AnyObject
+            } else if let value = child.value as? Int {
+                result[child.label!] = value as AnyObject
+            }
+        }
+        return result
+    }
 }
