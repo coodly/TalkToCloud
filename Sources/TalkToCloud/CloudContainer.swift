@@ -145,10 +145,6 @@ public class CloudContainer {
             return
         }
         
-        if let string = String(data: responseData, encoding: .utf8) {
-            Logging.log(string)
-        }
-        
         guard let responseJSON = try! JSONSerialization.jsonObject(with: responseData) as? [String: AnyObject] else {
             Logging.log("Could not get response content")
             return
@@ -221,9 +217,6 @@ private extension CloudContainer {
         
         Logging.log("Attach body \(bodyData.count)")
         request.httpBody = bodyData
-        if let string = String(data: bodyData, encoding: .utf8) {
-            Logging.log(string)
-        }
         
         Logging.log("Headers:")
         request.allHTTPHeaderFields?.forEach() {
@@ -243,10 +236,6 @@ private extension CloudContainer {
         guard let responseData = data else {
             Logging.log("No response data")
             return
-        }
-        
-        if let string = String(data: responseData, encoding: .utf8) {
-            Logging.log(string)
         }
         
         guard let result = try? decoder.decode(R.self, from: responseData) else {
@@ -280,10 +269,6 @@ private extension CloudContainer {
                 Logging.log("No response data")
                 completion(.failure)
                 return
-            }
-
-            if let string = String(data: received, encoding: .utf8) {
-                Logging.log(string)
             }
 
             guard let result = try? self.decoder.decode(R.self, from: received) else {
