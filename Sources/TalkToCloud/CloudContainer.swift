@@ -52,7 +52,16 @@ public class CloudContainer {
         let body: [String: AnyObject] = ["operations": operations as AnyObject]
         send(body: body, to: "/records/modify", in: database, completion: completion)
     }
-    
+
+    public func delete<T>(records: [RemoteRecord], in database: CloudDatabase = .public, completion: @escaping ((CloudResult<T>) -> ())) {
+        var operations = [[String: AnyObject]]()
+        for r in records {
+            operations.append(r.toOperation(forced: .delete))
+        }
+        let body: [String: AnyObject] = ["operations": operations as AnyObject]
+        send(body: body, to: "/records/modify", in: database, completion: completion)
+    }
+
     public func fetch<T>(limit: Int? = nil, desiredKeys: [String]? = nil, filter: Filter? = nil, sort: Sort? = nil, in database: CloudDatabase = .public, completion: @escaping ((CloudResult<T>) -> ())) {
         var query: [String: AnyObject] = ["recordType": T.recordType as AnyObject]
         if let f = filter, let params = f.json() {
@@ -172,8 +181,16 @@ public class CloudContainer {
         }
         
         Logging.log("Parsing \(records.count) records")
-        var result = [T]()
+        var result: [T] = []
+        var deleted: [T] = []
         for r in records {
+            if let marker = r["deleted"] as? Bool, let recordName = r["recordName"] as? String, marker {
+                var record = T()
+                record.recordName = recordName
+                deleted.append(record)
+                continue
+            }
+            
             guard let recordType = r["recordType"] as? String, recordType == T.recordType else {
                 continue
             }
@@ -186,6 +203,7 @@ public class CloudContainer {
         }
         
         Logging.log("Loaded \(result.count)")
+        Logging.log("Deleted \(deleted.count)")
         
         completion(.success(result, continuation))
     }

@@ -21,6 +21,7 @@ let ReservedFields = ["recordName", "recordChangeTag", "proposedName"]
 enum OperationType: String {
     case create = "create"
     case update = "update"
+    case delete = "delete"
 }
 
 public protocol RemoteRecord {
@@ -34,10 +35,13 @@ public protocol RemoteRecord {
 }
 
 extension RemoteRecord {
-    func toOperation() -> [String: AnyObject] {
+    func toOperation(forced: OperationType? = nil) -> [String: AnyObject] {
         var record: [String: AnyObject] = ["recordType": Self.recordType as AnyObject]
         let operation: OperationType
-        if let name = recordName {
+        if let type = forced, let name = recordName {
+            operation = type
+            record["recordName"] = name as AnyObject
+        } else if let name = recordName {
             operation = .update
             record["recordName"] = name as AnyObject
         } else if let proposed = proposedName {
