@@ -123,7 +123,7 @@ public class CloudContainer {
         Logging.log("Attach body \(data.count)")
         request.httpBody = data
         if let string = String(data: data, encoding: .utf8) {
-            Logging.log(string)
+            Logging.verbose(string)
         }
         
         Logging.log("Headers:")

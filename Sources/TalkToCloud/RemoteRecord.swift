@@ -94,7 +94,7 @@ extension RemoteRecord {
                 let value = asset.dictionary()
                 result[child.label!] = ["value": value] as AnyObject
             } else {
-                Logging.log("Could not cast \(child)")
+                Logging.verbose("Could not cast \(child)")
             }
         }
         return result

@@ -18,6 +18,8 @@ import Foundation
 
 public protocol Logger {
     func log<T>(_ object: T, file: String, function: String, line: Int)
+    func error<T>(_ object: T, file: String, function: String, line: Int)
+    func verbose<T>(_ object: T, file: String, function: String, line: Int)
 }
 
 public class Logging {
@@ -30,5 +32,13 @@ public class Logging {
     
     internal class func log<T>(_ object: T, file: String = #file, function: String = #function, line: Int = #line) {
         sharedInstance.logger?.log(object, file: file, function: function, line: line)
+    }
+
+    internal class func error<T>(_ object: T, file: String = #file, function: String = #function, line: Int = #line) {
+        sharedInstance.logger?.error(object, file: file, function: function, line: line)
+    }
+
+    internal class func verbose<T>(_ object: T, file: String = #file, function: String = #function, line: Int = #line) {
+        sharedInstance.logger?.verbose(object, file: file, function: function, line: line)
     }
 }
