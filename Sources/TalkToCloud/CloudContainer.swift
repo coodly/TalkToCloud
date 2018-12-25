@@ -16,14 +16,29 @@
 
 import Foundation
 
-public enum CloudResult<T: RemoteRecord> {
-    case success([T], (() -> ())?)
-    case failure
+public enum CloudError {
+    case undefined
+    case noData
+    case invalidData
+    case server(code: String, reason: String)
+    case network(Error)
+    case encode(Error)
+    case decode(Error)
+    case createAsset
+    case uploadAsset
 }
 
-public enum CloudCodedResult<T: Decodable> {
-    case success(T, (() -> ())?)
-    case failure
+public struct CloudResult<T: RemoteRecord> {
+    public let records: [T]
+    public let deleted: [T]
+    public let error: CloudError?
+    public let continuation: (() -> Void)?
+}
+
+public struct CloudCodedResult<T: Decodable> {
+    public let result: T?
+    public let error: CloudError?
+    public let continuation: (() -> Void)?
 }
 
 public class CloudContainer {
@@ -149,18 +164,30 @@ public class CloudContainer {
     }
     
     private func handleResult<T>(data: Data?, response: URLResponse?, error: Error?, cursor: Cursor<T>, completion: @escaping ((CloudResult<T>) -> ())) {
+        var cloudError: CloudError? = nil
+        var result: [T] = []
+        var deleted: [T] = []
+        var continuation: (() -> Void)? = nil
+        
+        defer {
+            completion(CloudResult(records: result, deleted: deleted, error: cloudError, continuation: continuation))
+        }
+        
         guard let responseData = data else {
             Logging.log("No response data")
+            cloudError = .noData
             return
         }
         
         guard let responseJSON = try! JSONSerialization.jsonObject(with: responseData) as? [String: AnyObject] else {
             Logging.log("Could not get response content")
+            cloudError = .invalidData
             return
         }
         
-        if let errorCode = responseJSON["serverErrorCode"] as? String, let reason = responseJSON["reason"] {
+        if let errorCode = responseJSON["serverErrorCode"] as? String, let reason = responseJSON["reason"] as? String {
             Logging.log("\(errorCode) - \(reason)")
+            cloudError = CloudError.server(code: errorCode, reason: reason)
             return
         }
         
@@ -170,7 +197,6 @@ public class CloudContainer {
         }
         
         let continuationMarker = responseJSON["continuationMarker"] as? String
-        var continuation: (() -> ())? = nil
         if let marker = continuationMarker {
             var used = cursor
             used.continuation = marker
@@ -181,8 +207,6 @@ public class CloudContainer {
         }
         
         Logging.log("Parsing \(records.count) records")
-        var result: [T] = []
-        var deleted: [T] = []
         for r in records {
             if let marker = r["deleted"] as? Bool, let recordName = r["recordName"] as? String, marker {
                 var record = T()
@@ -204,17 +228,18 @@ public class CloudContainer {
         
         Logging.log("Loaded \(result.count)")
         Logging.log("Deleted \(deleted.count)")
-        
-        completion(.success(result, continuation))
     }
 }
 
 private extension CloudContainer {
     private func sendCoded<B: Encodable, R: Decodable>(body: B, to path: String, in database: CloudDatabase, completion: @escaping ((CloudCodedResult<R>) -> Void)) {
         let fullQueryPath = "/database/1/\(container)/\(env.rawValue)/\(database.rawValue)\(path)"
-        guard let bodyData = try? encoder.encode(body) else {
-            Logging.log("Body not encoded")
-            completion(.failure)
+        let bodyData: Data
+        do {
+            bodyData = try encoder.encode(body)
+        } catch {
+            Logging.error("Encode error: \(error)")
+            completion(CloudCodedResult(result: nil, error: CloudError.encode(error), continuation: nil))
             return
         }
         
@@ -251,18 +276,25 @@ private extension CloudContainer {
     }
     
     private func handleCodedResult<R: Decodable>(data: Data?, response: URLResponse?, error: Error?, completion: @escaping ((CloudCodedResult<R>) -> ())) {
+        var result: R? = nil
+        var cloudError: CloudError? = nil
+        
+        defer {
+            completion(CloudCodedResult(result: result, error: cloudError, continuation: nil))
+        }
+        
         guard let responseData = data else {
             Logging.log("No response data")
+            cloudError = .noData
             return
         }
         
-        guard let result = try? decoder.decode(R.self, from: responseData) else {
-            Logging.log("No decode")
-            completion(.failure)
-            return
+        do {
+            result = try decoder.decode(R.self, from: responseData)
+        } catch {
+            Logging.error("Decode error \(error)")
+            cloudError = .decode(error)
         }
-        
-        completion(.success(result, nil))
     }
 }
 
@@ -276,26 +308,33 @@ private extension CloudContainer {
         
         fetch.fetch(request: request as URLRequest) {
             data, response, error in
+            
+            var cloudError: CloudError? = nil
+            var result: R? = nil
+            var continuation: (() -> Void)? = nil
+            
+            defer {
+                completion(CloudCodedResult(result: result, error: cloudError, continuation: continuation))
+            }
 
             if let error = error {
                 Logging.log(error)
-                completion(.failure)
+                cloudError = .network(error)
                 return
             }
 
             guard let received = data else {
                 Logging.log("No response data")
-                completion(.failure)
+                cloudError = .noData
                 return
             }
 
-            guard let result = try? self.decoder.decode(R.self, from: received) else {
-                Logging.log("Response not decoded")
-                completion(.failure)
-                return
+            do {
+                result = try self.decoder.decode(R.self, from: received)
+            } catch {
+                Logging.error("Response not decoded: \(error)")
+                cloudError = .decode(error)
             }
-            
-            completion(.success(result, nil))
         }
     }
 }
@@ -306,7 +345,7 @@ public extension CloudContainer {
         
         guard let target = createAssetRecord(asset: asset, in: database) else {
             Logging.log("No target created")
-            completion(.failure)
+            completion(CloudResult(records: [], deleted: [], error: CloudError.createAsset, continuation: nil))
             return
         }
         
@@ -314,7 +353,7 @@ public extension CloudContainer {
         
         guard let definition = uploadAssetData(asset.data, with: target) else {
             Logging.log("Binary upload not done")
-            completion(.failure)
+            completion(CloudResult(records: [], deleted: [], error: CloudError.uploadAsset, continuation: nil))
             return
         }
         
@@ -333,11 +372,12 @@ public extension CloudContainer {
         let createHandler: ((CloudCodedResult<AssetCreateResponse>) -> Void) = {
             result in
             
-            switch result {
-            case .failure:
-                target = nil
-            case .success(let result, _):
-                target = result.tokens.first
+            if let token = result.result?.tokens.first {
+                target = token
+            } else if let error = result.error {
+                Logging.error("Crate asset error: \(error)")
+            } else {
+                Logging.log("Creating asset record and nothing happened?")
             }
         }
         
@@ -351,11 +391,12 @@ public extension CloudContainer {
         let sendHandler: ((CloudCodedResult<AssetUploadResponse>) -> Void) = {
             result in
             
-            switch result {
-            case .failure:
-                Logging.log("Data upload failed")
-            case .success(let def, _):
-                definition = def.singleFile
+            if let file = result.result?.singleFile {
+                definition = file
+            } else if let error = result.error {
+                Logging.error("Upload asset data error: \(error)")
+            } else {
+                Logging.log("Uploaded asset data and nothing happened?")
             }
         }
         send(raw: data, to: target.url, completion: sendHandler)
