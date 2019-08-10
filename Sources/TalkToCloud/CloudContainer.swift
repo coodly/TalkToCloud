@@ -179,6 +179,10 @@ public class CloudContainer {
             return
         }
         
+        if let string = String(data: responseData, encoding: .utf8) {
+            Logging.verbose(string)
+        }
+        
         guard let responseJSON = try! JSONSerialization.jsonObject(with: responseData) as? [String: AnyObject] else {
             Logging.log("Could not get response content")
             cloudError = .invalidData

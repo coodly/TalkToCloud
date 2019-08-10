@@ -31,6 +31,10 @@ public enum Filter {
     case equals(String, AnyObject)
     case notEquals(String, AnyObject)
     case `in`(String, [AnyObject])
+    case lt(String, AnyObject)
+    case lte(String, AnyObject)
+    case gt(String, AnyObject)
+    case gte(String, AnyObject)
     case and([Filter])
     
     func json() -> AnyObject? {
@@ -59,6 +63,22 @@ public enum Filter {
             }
             
             return combined as AnyObject
+        case .lt(let key, let value):
+            method = "LESS_THAN"
+            fieldName = key
+            recordValue = decoded(value)
+        case .lte(let key, let value):
+            method = "LESS_THAN_OR_EQUALS"
+            fieldName = key
+            recordValue = decoded(value)
+        case .gt(let key, let value):
+            method = "GREATER_THAN"
+            fieldName = key
+            recordValue = decoded(value)
+        case .gte(let key, let value):
+            method = "GREATER_THAN_OR_EQUALS"
+            fieldName = key
+            recordValue = decoded(value)
         }
         
         guard let comparator = method, let field = fieldName, let record = recordValue else {
@@ -71,6 +91,8 @@ public enum Filter {
     private func decoded(_ value: AnyObject) -> AnyObject {
         if let reference = value as? RemoteReference {
             return reference.dictionary() as AnyObject
+        } else if let date = value as? Date {
+            return date.milliseconds() as AnyObject
         } else {
             return value
         }
