@@ -63,3 +63,9 @@ public struct AssetFileDefinition: Decodable {
         return result
     }
 }
+
+public struct AssetDownloadTarget: Decodable {
+    let fileChecksum: String
+    let size: Int
+    let downloadURL: String
+}
