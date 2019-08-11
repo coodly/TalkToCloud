@@ -30,7 +30,8 @@ public enum CloudError {
 
 public struct CloudResult<T: RemoteRecord> {
     public let records: [T]
-    public let deleted: [T]
+    public let deleted: [DeletedRecord]
+    public let recordErrors: [RecordError]
     public let error: CloudError?
     public let continuation: (() -> Void)?
 }
@@ -166,7 +167,7 @@ public class CloudContainer {
     private func handleResult<T>(data: Data?, response: URLResponse?, error: Error?, cursor: Cursor<T>, completion: @escaping ((CloudResult<T>) -> ())) {
         var cloudError: CloudError? = nil
         var result: [T] = []
-        var deleted: [T] = []
+        var deleted: [DeletedRecord] = []
         var errors: [RecordError] = []
         var continuation: (() -> Void)? = nil
         
@@ -175,7 +176,7 @@ public class CloudContainer {
             Logging.log("Deleted \(deleted.count)")
             Logging.log("Errors: \(errors.count)")
 
-            completion(CloudResult(records: result, deleted: deleted, error: cloudError, continuation: continuation))
+            completion(CloudResult(records: result, deleted: deleted, recordErrors: errors, error: cloudError, continuation: continuation))
         }
         
         guard let responseData = data else {
@@ -196,7 +197,7 @@ public class CloudContainer {
             return
         }
         
-        let records = response.records.compactMap({ $0.record }).filter({ !$0.deleted })
+        let records = response.records.filter({ !($0.deleted ?? false) }).compactMap({ $0.record })
         for record in records {
             guard record.recordType == T.recordType else {
                 continue
@@ -208,6 +209,7 @@ public class CloudContainer {
             }
         }
         errors = response.records.compactMap({ $0.error })
+        deleted = response.records.compactMap({ $0.deletion })
         
         if let marker = response.continuationMarker {
             var used = cursor
@@ -381,7 +383,7 @@ extension CloudContainer {
         
         guard let target = createAssetRecord(asset: asset, in: database) else {
             Logging.log("No target created")
-            completion(CloudResult(records: [], deleted: [], error: CloudError.createAsset, continuation: nil))
+            completion(CloudResult(records: [], deleted: [], recordErrors: [], error: CloudError.createAsset, continuation: nil))
             return
         }
         
@@ -389,7 +391,7 @@ extension CloudContainer {
         
         guard let definition = uploadAssetData(asset.data, with: target) else {
             Logging.log("Binary upload not done")
-            completion(CloudResult(records: [], deleted: [], error: CloudError.uploadAsset, continuation: nil))
+            completion(CloudResult(records: [], deleted: [], recordErrors: [], error: CloudError.uploadAsset, continuation: nil))
             return
         }
         

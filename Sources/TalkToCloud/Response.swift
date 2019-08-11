@@ -38,7 +38,11 @@ internal struct RawRecord: Decodable {
             return nil
         }
         
-        return Record(recordName: recordName, recordType: recordType!, fields: fields!, recordChangeTag: recordChangeTag!, created: created!, modified: modified!, deleted: deleted!)
+        if deleted ?? false {
+            return nil
+        }
+        
+        return Record(recordName: recordName, recordType: recordType!, fields: fields!, recordChangeTag: recordChangeTag!, created: created!, modified: modified!)
     }
     
     var error: RecordError? {
@@ -47,6 +51,14 @@ internal struct RawRecord: Decodable {
         }
         
         return RecordError(recordName: recordName, reason: reason, serverErrorCode: error)
+    }
+    
+    var deletion: DeletedRecord? {
+        guard deleted ?? false else {
+            return nil
+        }
+        
+        return DeletedRecord(recordName: recordName)
     }
 }
 
@@ -58,7 +70,6 @@ public struct Record {
     public let recordChangeTag: String
     public let created: SystemTimestamp
     public let modified: SystemTimestamp
-    public let deleted: Bool
     
     public subscript(dynamicMember member: String) -> String? {
         return fields[member]?.string
@@ -198,9 +209,13 @@ internal struct FieldValue: Decodable {
 }
 
 public struct RecordError {
-    let recordName: String
-    let reason: String
-    let serverErrorCode: String
+    public let recordName: String
+    public let reason: String
+    public let serverErrorCode: String
+}
+
+public struct DeletedRecord {
+    public let recordName: String
 }
 
 private extension Double {
