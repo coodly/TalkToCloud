@@ -188,6 +188,12 @@ public class CloudContainer {
         if let string = String(data: responseData, encoding: .utf8) {
             Logging.verbose(string)
         }
+        
+        if let serverError = try? decoder.decode(ErrorResponse.self, from: responseData) {
+            Logging.log("Error response: \(serverError)")
+            cloudError = CloudError.server(code: serverError.serverErrorCode, reason: serverError.reason)
+            return
+        }
 
         let response: Response
         do {
@@ -218,54 +224,7 @@ public class CloudContainer {
             continuation = {
                 self.continueWith(cursor: used)
             }
-        }
-        
-        /*guard let responseJSON = try! JSONSerialization.jsonObject(with: responseData) as? [String: AnyObject] else {
-            Logging.log("Could not get response content")
-            cloudError = .invalidData
-            return
-        }
-        
-        if let errorCode = responseJSON["serverErrorCode"] as? String, let reason = responseJSON["reason"] as? String {
-            Logging.log("\(errorCode) - \(reason)")
-            cloudError = CloudError.server(code: errorCode, reason: reason)
-            return
-        }
-        
-        guard let records = responseJSON["records"] as? [[String: AnyObject]] else {
-            Logging.log("No records in response")
-            return
-        }
-        
-        let continuationMarker = responseJSON["continuationMarker"] as? String
-        if let marker = continuationMarker {
-            var used = cursor
-            used.continuation = marker
-            used.handler = completion
-            continuation = {
-                self.continueWith(cursor: used)
-            }
-        }
-        
-        Logging.log("Parsing \(records.count) records")
-        for r in records {
-            if let marker = r["deleted"] as? Bool, let recordName = r["recordName"] as? String, marker {
-                var record = T()
-                record.recordName = recordName
-                deleted.append(record)
-                continue
-            }
-            
-            guard let recordType = r["recordType"] as? String, recordType == T.recordType else {
-                continue
-            }
-            
-            /*var record = T()
-            guard record.load(values: r) else {
-                continue
-            }
-            result.append(record)*/
-        }*/
+        }                
     }
 }
 

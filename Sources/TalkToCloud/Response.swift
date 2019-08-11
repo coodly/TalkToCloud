@@ -226,6 +226,11 @@ public struct DeletedRecord {
     public let recordName: String
 }
 
+internal struct ErrorResponse: Decodable {
+    let serverErrorCode: String
+    let reason: String
+}
+
 private extension Double {
     var millisecondsToDate: Date {
         let seconds: TimeInterval = self / 1000.0
