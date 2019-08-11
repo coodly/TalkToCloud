@@ -17,12 +17,41 @@
 import Foundation
 
 internal struct Response: Decodable {
-    let records: [Record]
+    let records: [RawRecord]
     let continuationMarker: String?
 }
 
+internal struct RawRecord: Decodable {
+    let recordName: String
+    let recordType: String?
+    let fields: [String: FieldValue]?
+    let recordChangeTag: String?
+    let created: SystemTimestamp?
+    let modified: SystemTimestamp?
+    let deleted: Bool?
+    
+    let reason: String?
+    let serverErrorCode: String?
+    
+    var record: Record? {
+        guard reason == nil, serverErrorCode == nil else {
+            return nil
+        }
+        
+        return Record(recordName: recordName, recordType: recordType!, fields: fields!, recordChangeTag: recordChangeTag!, created: created!, modified: modified!, deleted: deleted!)
+    }
+    
+    var error: RecordError? {
+        guard let reason = self.reason, let error = serverErrorCode else {
+            return nil
+        }
+        
+        return RecordError(recordName: recordName, reason: reason, serverErrorCode: error)
+    }
+}
+
 @dynamicMemberLookup
-public struct Record: Decodable {
+public struct Record {
     public let recordName: String
     public let recordType: String
     internal let fields: [String: FieldValue]
@@ -168,7 +197,11 @@ internal struct FieldValue: Decodable {
     }
 }
 
-
+public struct RecordError {
+    let recordName: String
+    let reason: String
+    let serverErrorCode: String
+}
 
 private extension Double {
     var millisecondsToDate: Date {

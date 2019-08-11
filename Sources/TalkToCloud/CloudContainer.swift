@@ -167,11 +167,13 @@ public class CloudContainer {
         var cloudError: CloudError? = nil
         var result: [T] = []
         var deleted: [T] = []
+        var errors: [RecordError] = []
         var continuation: (() -> Void)? = nil
         
         defer {
             Logging.log("Loaded \(result.count)")
             Logging.log("Deleted \(deleted.count)")
+            Logging.log("Errors: \(errors.count)")
 
             completion(CloudResult(records: result, deleted: deleted, error: cloudError, continuation: continuation))
         }
@@ -194,7 +196,8 @@ public class CloudContainer {
             return
         }
         
-        for record in response.records {
+        let records = response.records.compactMap({ $0.record }).filter({ !$0.deleted })
+        for record in records {
             guard record.recordType == T.recordType else {
                 continue
             }
@@ -204,8 +207,18 @@ public class CloudContainer {
                 result.append(loaded)
             }
         }
+        errors = response.records.compactMap({ $0.error })
         
-        guard let responseJSON = try! JSONSerialization.jsonObject(with: responseData) as? [String: AnyObject] else {
+        if let marker = response.continuationMarker {
+            var used = cursor
+            used.continuation = marker
+            used.handler = completion
+            continuation = {
+                self.continueWith(cursor: used)
+            }
+        }
+        
+        /*guard let responseJSON = try! JSONSerialization.jsonObject(with: responseData) as? [String: AnyObject] else {
             Logging.log("Could not get response content")
             cloudError = .invalidData
             return
@@ -250,7 +263,7 @@ public class CloudContainer {
                 continue
             }
             result.append(record)*/
-        }
+        }*/
     }
 }
 
