@@ -72,27 +72,36 @@ extension RemoteRecord {
             if ReservedFields.contains(child.label!) {
                 continue
             }
+            
+            guard let label = child.label else {
+                continue
+            }
+            
+            if label.starts(with: "_") {
+                Logging.verbose("\(label) not serialized for push")
+                continue
+            }
 
             if let value = child.value as? String {
-                result[child.label!] = ["value": value] as AnyObject
+                result[label] = ["value": value] as AnyObject
             } else if let value = child.value as? Int {
-                result[child.label!] = ["value": value] as AnyObject
+                result[label] = ["value": value] as AnyObject
             } else if let value = child.value as? Date {
-                result[child.label!] = ["value": value.milliseconds()] as AnyObject
+                result[label] = ["value": value.milliseconds()] as AnyObject
             } else if let value = child.value as? Double {
-                result[child.label!] = ["value": value] as AnyObject
+                result[label] = ["value": value] as AnyObject
             } else if let value = child.value as? Bool {
-                result[child.label!] = ["value": value ? 1 : 0] as AnyObject
+                result[label] = ["value": value ? 1 : 0] as AnyObject
             } else if let value = child.value as? [String] {
-                result[child.label!] = ["value": value] as AnyObject
+                result[label] = ["value": value] as AnyObject
             } else if let value = child.value as? [Int] {
-                result[child.label!] = ["value": value] as AnyObject
+                result[label] = ["value": value] as AnyObject
             } else if let remote = (child.value as AnyObject) as? RemoteReference {
                 let value = remote.dictionary()
-                result[child.label!] = ["value": value] as AnyObject
+                result[label] = ["value": value] as AnyObject
             } else if let asset = child.value as? AssetFileDefinition {
                 let value = asset.dictionary()
-                result[child.label!] = ["value": value] as AnyObject
+                result[label] = ["value": value] as AnyObject
             } else {
                 Logging.verbose("Could not cast \(child)")
             }
