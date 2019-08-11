@@ -16,7 +16,7 @@
 
 import Foundation
 
-public enum ReferenceAction: String {
+public enum ReferenceAction: String, Decodable {
     case none = "NONE"
     case deleteSelf = "DELETE_SELF"
     case validate = "VALIDATE"
@@ -30,8 +30,12 @@ public struct RemoteReference {
         self.recordName = recordName
         self.action = action
     }
-
+    
     func dictionary() -> [String: String] {
         return ["recordName": recordName, "action": action.rawValue]
     }
+}
+
+extension RemoteReference: Decodable {
+    
 }

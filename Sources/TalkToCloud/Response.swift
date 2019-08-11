@@ -74,6 +74,14 @@ public struct Record: Decodable {
     public subscript(dynamicMember member: String) -> Bool {
         return fields[member]?.int64?.asBool ?? false
     }
+    
+    public subscript(dynamicMember member: String) -> RemoteReference? {
+        return fields[member]?.reference
+    }
+    
+    public subscript(dynamicMember member: String) -> [RemoteReference]? {
+        return fields[member]?.referenceList
+    }
 }
 
 public struct SystemTimestamp: Decodable {
@@ -96,6 +104,8 @@ internal struct FieldValue: Decodable {
         case stringList = "STRING_LIST"
         case timestamp = "TIMESTAMP"
         case timestampList = "TIMESTAMP_LIST"
+        case reference = "REFERENCE"
+        case referenceList = "REFERENCE_LIST"
     }
     
     enum CodingKeys: String, CodingKey {
@@ -113,6 +123,8 @@ internal struct FieldValue: Decodable {
     var int64List: [Int64]? = nil
     var timestamp: Double? = nil
     var timestampList: [Double]? = nil
+    var reference: RemoteReference? = nil
+    var referenceList: [RemoteReference]? = nil
 
     init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
@@ -137,6 +149,10 @@ internal struct FieldValue: Decodable {
             timestamp = try? values.decode(Double.self, forKey: .value)
         case .timestampList:
             timestampList = try? values.decode([Double].self, forKey: .value)
+        case .reference:
+            reference = try? values.decode(RemoteReference.self, forKey: .value)
+        case .referenceList:
+            referenceList = try? values.decode([RemoteReference].self, forKey: .value)
         }
     }
     
@@ -148,6 +164,8 @@ internal struct FieldValue: Decodable {
         return timestampList?.map({ $0.millisecondsToDate })
     }
 }
+
+
 
 private extension Double {
     var millisecondsToDate: Date {
