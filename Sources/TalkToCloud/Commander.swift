@@ -16,7 +16,7 @@
 
 import Foundation
 
-public extension URLSession {
+extension URLSession {
     public func synchronousDataWithRequest(request: URLRequest, completionHandler: (Data?, URLResponse?, Error?) -> Void) {
         var data: Data?
         var response: URLResponse?
@@ -38,7 +38,7 @@ public extension URLSession {
     }
 }
 
-class Fetch: NetworkFetch {
+fileprivate class Fetch: NetworkFetch {
     func fetch(request: URLRequest, completion: NetworkFetchClosure) {
         URLSession.shared.synchronousDataWithRequest(request: request, completionHandler: completion)
     }

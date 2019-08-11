@@ -170,6 +170,9 @@ public class CloudContainer {
         var continuation: (() -> Void)? = nil
         
         defer {
+            Logging.log("Loaded \(result.count)")
+            Logging.log("Deleted \(deleted.count)")
+
             completion(CloudResult(records: result, deleted: deleted, error: cloudError, continuation: continuation))
         }
         
@@ -181,6 +184,25 @@ public class CloudContainer {
         
         if let string = String(data: responseData, encoding: .utf8) {
             Logging.verbose(string)
+        }
+
+        let response: Response
+        do {
+            response = try decoder.decode(Response.self, from: responseData)
+        } catch {
+            cloudError = .decode(error)
+            return
+        }
+        
+        for record in response.records {
+            guard record.recordType == T.recordType else {
+                continue
+            }
+            
+            var loaded = T()
+            if loaded.loadValues(from: record) {
+                result.append(loaded)
+            }
         }
         
         guard let responseJSON = try! JSONSerialization.jsonObject(with: responseData) as? [String: AnyObject] else {
@@ -223,15 +245,12 @@ public class CloudContainer {
                 continue
             }
             
-            var record = T()
+            /*var record = T()
             guard record.load(values: r) else {
                 continue
             }
-            result.append(record)
+            result.append(record)*/
         }
-        
-        Logging.log("Loaded \(result.count)")
-        Logging.log("Deleted \(deleted.count)")
     }
 }
 
@@ -343,7 +362,7 @@ private extension CloudContainer {
     }
 }
 
-public extension CloudContainer {
+extension CloudContainer {
     public func upload<T: RemoteRecord & AssetAttached>(asset: AssetUpload, attachedTo record: T, in database: CloudDatabase = .public, completion: @escaping ((CloudResult<T>) -> ())) {
         Logging.log("Upload asset")
         

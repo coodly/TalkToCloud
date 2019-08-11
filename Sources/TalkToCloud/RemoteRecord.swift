@@ -31,7 +31,7 @@ public protocol RemoteRecord {
     var recordChangeTag: String? { get set }
     
     init()
-    mutating func load(fields: [String: AnyObject]) -> Bool
+    mutating func loadFields(from record: Record) -> Bool
 }
 
 extension RemoteRecord {
@@ -100,20 +100,11 @@ extension RemoteRecord {
         return result
     }
     
-    mutating func load(values: [String: AnyObject]) -> Bool {
-        guard let name = values["recordName"] as? String else {
-            Logging.log("No value for 'recordName'")
-            return false
-        }
+    internal mutating func loadValues(from record: Record) -> Bool {
+        recordName = record.recordName
+        recordChangeTag = record.recordChangeTag
         
-        recordName = name
-        recordChangeTag = values["recordChangeTag"] as? String
-        
-        guard let recordFields = values["fields"] as? [String: AnyObject] else {
-            return true
-        }
-        
-        return load(fields: recordFields)
+        return loadFields(from: record)
     }
 }
 
