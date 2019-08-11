@@ -106,6 +106,7 @@ internal struct FieldValue: Decodable {
         case timestampList = "TIMESTAMP_LIST"
         case reference = "REFERENCE"
         case referenceList = "REFERENCE_LIST"
+        case unknownList = "UNKNOWN_LIST"
     }
     
     enum CodingKeys: String, CodingKey {
@@ -153,6 +154,8 @@ internal struct FieldValue: Decodable {
             reference = try? values.decode(RemoteReference.self, forKey: .value)
         case .referenceList:
             referenceList = try? values.decode([RemoteReference].self, forKey: .value)
+        case .unknownList:
+            break
         }
     }
     
