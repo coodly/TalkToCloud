@@ -108,8 +108,15 @@ public class CloudContainer {
         fetch(limit: 1, desiredKeys: desiredKeys, filter: filter, sort: sort, in: database, completion: completion)
     }
     
-    public func lookup<T>(recordName: String, in database: CloudDatabase = .public, completion: @escaping ((CloudResult<T>) -> Void)) {
-        let body: [String: AnyObject] = ["records": [["recordName": recordName]] as AnyObject]
+    public func lookup<T>(recordName: String, desiredKeys: [String]? = nil, in database: CloudDatabase = .public, completion: @escaping ((CloudResult<T>) -> Void)) {
+        lookup(recordNames: [recordName], desiredKeys: desiredKeys, in: database, completion: completion)
+    }
+    
+    public func lookup<T>(recordNames: [String], desiredKeys: [String]? = nil, in database: CloudDatabase = .public, completion: @escaping ((CloudResult<T>) -> Void)) {
+        var body: [String: AnyObject] = ["records": recordNames.map({ ["recordName": $0] }) as AnyObject]
+        if let keys = desiredKeys {
+            body["desiredKeys"] = keys as AnyObject
+        }
         send(body: body, to: "/records/lookup", in: database, completion: completion)
     }
     
