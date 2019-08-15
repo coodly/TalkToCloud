@@ -207,6 +207,10 @@ public class CloudContainer {
             response = try decoder.decode(Response.self, from: responseData)
         } catch {
             cloudError = .decode(error)
+            Logging.error("Failed to decode:")
+            if let string = String(data: responseData, encoding: .utf8) {
+                Logging.error(string)
+            }
             return
         }
         
