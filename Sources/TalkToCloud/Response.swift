@@ -231,6 +231,11 @@ internal struct ErrorResponse: Decodable {
     let reason: String
 }
 
+internal struct RetryAfterResponse: Decodable {
+    let serverErrorCode: String
+    let retryAfter: TimeInterval
+}
+
 private extension Double {
     var millisecondsToDate: Date {
         let seconds: TimeInterval = self / 1000.0

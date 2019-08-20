@@ -21,6 +21,7 @@ public enum CloudError {
     case noData
     case invalidData
     case server(code: String, reason: String)
+    case retry(after: TimeInterval)
     case network(Error)
     case encode(Error)
     case decode(Error)
@@ -199,6 +200,11 @@ public class CloudContainer {
         if let serverError = try? decoder.decode(ErrorResponse.self, from: responseData) {
             Logging.log("Error response: \(serverError)")
             cloudError = CloudError.server(code: serverError.serverErrorCode, reason: serverError.reason)
+            return
+        }
+        if let retry = try? decoder.decode(RetryAfterResponse.self, from: responseData) {
+            Logging.log("Error response: \(retry)")
+            cloudError = CloudError.retry(after: retry.retryAfter)
             return
         }
 
