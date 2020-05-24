@@ -70,13 +70,44 @@ internal class CURLRequest {
         let result = Shell.shared.curl.launch(arguments)
         assert(result.status == 0)
         
-        result.values.forEach() {
-            value in
-            
-            value.components(separatedBy: "\n").forEach({ Logging.verbose("\t\($0)") })
+        let data = try? Data(contentsOf: received)
+        let response = self.response()
+        completion(data, response, nil)
+    }
+    
+    private func response() -> URLResponse? {
+        guard let data = try? Data(contentsOf: headers), let string = String(data: data, encoding: .utf8) else {
+            return nil
         }
         
-        let data = try? Data(contentsOf: received)
-        completion(data, nil, nil)
+        let lines = string.components(separatedBy: "\n")
+        guard let statusLine = lines.first, let status = statusLine.httpStatusCode else {
+            return nil
+        }
+        
+        let headerFields = headers(from: Array(lines.dropFirst()))
+        
+        return HTTPURLResponse(url: request.url!, statusCode: status, httpVersion: nil, headerFields: headerFields)
+    }
+    
+    private func headers(from lines: [String]) -> [String: String] {
+        var result = [String: String]()
+        for line in lines {
+            guard let index = line.firstIndex(of: ":") else {
+                continue
+            }
+            
+            let name = String(line.prefix(upTo: index))
+            let value = line.suffix(from: index).trimmingCharacters(in: .whitespacesAndNewlines)
+            result[name] = value
+        }
+        
+        return result
+    }
+}
+
+extension String {
+    fileprivate var httpStatusCode: Int? {
+        components(separatedBy: " ").compactMap({ Int($0) }).first
     }
 }
