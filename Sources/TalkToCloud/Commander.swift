@@ -19,34 +19,6 @@ import Foundation
 import FoundationNetworking
 #endif
 
-extension URLSession {
-    public func synchronousDataWithRequest(request: URLRequest, completionHandler: (Data?, URLResponse?, Error?) -> Void) {
-        var data: Data?
-        var response: URLResponse?
-        var error: Error?
-        
-        let sem = DispatchSemaphore(value: 0)
-        
-        let task = dataTask(with: request) {
-            data = $0
-            response = $1
-            error = $2
-            sem.signal()
-        }
-        
-        task.resume()
-        
-        sem.wait()
-        completionHandler(data, response, error)
-    }
-}
-
-fileprivate class Fetch: NetworkFetch {
-    func fetch(request: URLRequest, completion: NetworkFetchClosure) {
-        URLSession.shared.synchronousDataWithRequest(request: request, completionHandler: completion)
-    }
-}
-
 public class Commander<C: Command> {
     private let arguments: [String]
     private let containerId: String
@@ -60,7 +32,7 @@ public class Commander<C: Command> {
         Logging.log("Arguments: \(arguments)")
         let command = C()
         
-        let fetch = Fetch()
+        let fetch = SynchronousSystemFetch()
         
         let config = Configuration(containerId: containerId)
         if var consumer = command as? ContainerConsumer {
@@ -79,7 +51,7 @@ public class Commander<C: Command> {
         remaining.removeFirst()
         let toRemove = ["--production", "--development"]
         for remove in toRemove {
-            if let index = remaining.index(of: remove) {
+            if let index = remaining.firstIndex(of: remove) {
                 remaining.remove(at: index)
             }
         }
