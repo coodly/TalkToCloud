@@ -32,7 +32,11 @@ public class Commander<C: Command> {
         Logging.log("Arguments: \(arguments)")
         let command = C()
         
+        #if os(Linux)
+        let fetch = CommandLineFetch()
+        #else
         let fetch = SynchronousSystemFetch()
+        #endif
         
         let config = Configuration(containerId: containerId)
         if var consumer = command as? ContainerConsumer {
