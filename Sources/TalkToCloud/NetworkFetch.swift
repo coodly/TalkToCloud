@@ -15,6 +15,9 @@
  */
 
 import Foundation
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 
 public typealias NetworkFetchClosure = (Data?, URLResponse?, Error?) -> ()
 

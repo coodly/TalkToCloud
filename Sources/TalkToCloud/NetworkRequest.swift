@@ -15,6 +15,9 @@
  */
 
 import Foundation
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 
 class NetworkRequest {
     private static let baseURL = URL(string: "https://api.apple-cloudkit.com")!
