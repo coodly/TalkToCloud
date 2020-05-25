@@ -22,7 +22,7 @@ import FoundationNetworking
 public class CommandLineFetch: NetworkFetch {
     public init() {}
     
-    public func fetch(request: URLRequest, completion: (Data?, URLResponse?, Error?) -> ()) {
+    public func fetch(_ request: URLRequest, completion: (Data?, URLResponse?, Error?) -> ()) {
         Logging.verbose("\(request.httpMethod ?? "-") to \(request.url?.absoluteString ?? "-")")
         let curl = CURLRequest(request: request)
         curl.execute(completion: completion)

@@ -162,7 +162,7 @@ public class CloudContainer {
 
         let cursor = Cursor<T>(path: path, data: data, handler: nil, continuation: nil)
 
-        fetch.fetch(request: request as URLRequest) {
+        fetch.fetch(request as URLRequest) {
             data, response, error in
                         
             self.handleResult(data: data, response: response, error: error, cursor: cursor, completion: completion)
@@ -285,7 +285,7 @@ private extension CloudContainer {
             Logging.log("\t\(key): \(value)")
         }
         
-        fetch.fetch(request: request as URLRequest) {
+        fetch.fetch(request as URLRequest) {
             data, response, error in
             
             self.handleCodedResult(data: data, response: response, error: error, completion: completion)
@@ -323,7 +323,7 @@ private extension CloudContainer {
         request.httpBody = data
         request.setValue("application/octet-stream", forHTTPHeaderField: "Content-Type")
         
-        fetch.fetch(request: request as URLRequest) {
+        fetch.fetch(request as URLRequest) {
             data, response, error in
             
             var cloudError: CloudError? = nil

@@ -44,7 +44,7 @@ extension URLSession {
 public class SynchronousSystemFetch: NetworkFetch {
     public init() {}
 
-    public func fetch(request: URLRequest, completion: NetworkFetchClosure) {
+    public func fetch(_ request: URLRequest, completion: NetworkFetchClosure) {
         Logging.verbose("\(request.httpMethod ?? "-") to \(request.url?.absoluteString ?? "-")")
         URLSession.shared.synchronousDataWithRequest(request: request, completionHandler: completion)
     }
