@@ -26,6 +26,10 @@ public class PrivateKeyAuthenticator: Authenticator {
         return formatter
     }()
     
+    public var params: [String : String] {
+        [:]
+    }
+    
     private let apiKeyID: String
     private let sign: SignData
     public init(apiKeyID: String, sign: SignData) {

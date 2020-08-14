@@ -17,5 +17,7 @@
 import Foundation
 
 public protocol Authenticator {
+    var params: [String: String] { get }
+    
     func signedHeaders(for data: Data, query: String) -> [String: String]
 }
