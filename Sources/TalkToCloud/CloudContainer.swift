@@ -124,6 +124,10 @@ public class CloudContainer {
         send(body: body, to: "/records/lookup", in: database, completion: completion)
     }
     
+    public func loadUser(completion: @escaping ((Result<User, Error>) -> Void)) {
+        Logging.log("Load user in \(env)")
+    }
+    
     private func send<T>(body: [String: AnyObject], to path: String, in database: CloudDatabase, completion: @escaping ((CloudResult<T>) -> ())) {
         let fullQueryPath = "/database/1/\(container)/\(env.rawValue)/\(database.rawValue)\(path)"
         let bodyData = try! JSONSerialization.data(withJSONObject: body)
