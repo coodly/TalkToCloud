@@ -18,20 +18,20 @@ import Foundation
 
 public class TokenAuthenticator: Authenticator {
     private let apiToken: String
-    private var userToken: String?
+    private let tokenStore: WebTokenStore
     
     public var params: [String : String] {
         var result = [String: String]()
         result["ckAPIToken"] = apiToken
-        if let user = userToken {
-            result["ckWebAuthToken"] = user
+        if let token = tokenStore.webToken {
+            result["ckWebAuthToken"] = token
         }
         return result
     }
     
-    public init(apiToken: String, userToken: String?) {
+    public init(apiToken: String, tokenStore: WebTokenStore) {
         self.apiToken = apiToken
-        self.userToken = userToken
+        self.tokenStore = tokenStore
     }
     
     public func signedHeaders(for data: Data, query: String) -> [String: String] {
@@ -44,6 +44,6 @@ public class TokenAuthenticator: Authenticator {
         }
 
         Logging.verbose("Mark refreshed token")
-        userToken = next
+        tokenStore.webToken = next
     }
 }
