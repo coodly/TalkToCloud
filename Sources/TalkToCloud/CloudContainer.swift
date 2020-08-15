@@ -19,7 +19,7 @@ import Foundation
 import FoundationNetworking
 #endif
 
-public enum CloudError {
+public enum CloudError: Error {
     case undefined
     case noData
     case invalidData
@@ -30,6 +30,7 @@ public enum CloudError {
     case decode(Error)
     case createAsset
     case uploadAsset
+    case authenticate(URL)
 }
 
 public struct CloudResult<T: RemoteRecord> {

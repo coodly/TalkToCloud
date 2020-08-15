@@ -16,6 +16,6 @@
 
 import Foundation
 
-public struct User: Decodable {
-    let userRecordName: String
+internal class Raw {
+    
 }

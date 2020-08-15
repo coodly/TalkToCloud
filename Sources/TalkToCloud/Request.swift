@@ -23,15 +23,22 @@ internal struct Variables {
     let fetch: NetworkFetch
 }
 
-internal class Request<T> {
+internal class Request<T: Decodable> {
     private enum Method: String {
         case post = "POST"
         case get = "GET"
     }
     
+    private lazy var decoder = JSONDecoder()
+    
     private let baseURL = URL(string: "https://api.apple-cloudkit.com/database/1/")!
     private let variables: Variables
     private var handler: ((Result<T, Error>) -> Void)?
+    private var result: Result<T, Error>? {
+        didSet {
+            handler?(result!)
+        }
+    }
     
     internal init(variables: Variables) {
         self.variables = variables
@@ -70,12 +77,44 @@ internal class Request<T> {
         let request = NSMutableURLRequest(url: url)
         request.httpMethod = method.rawValue
         
-        variables.fetch.fetch(request as URLRequest) {
-            data, response, error in
-            
-            if let data = data, let string = String(data: data, encoding: .utf8) {
-                Logging.verbose(string)
-            }
+        variables.fetch.fetch(request as URLRequest, completion: handle(_:response:error:))
+    }
+    
+    private func handle(_ data: Data?, response: URLResponse?, error: Error?) {
+        if let error = error {
+            Logging.log(error)
+            result = .failure(CloudError.network(error))
+            return
+        }
+        
+        guard let data = data else {
+            Logging.log("No response data")
+            result = .failure(CloudError.noData)
+            return
+        }
+        
+        if let string = String(data: data, encoding: .utf8) {
+            Logging.verbose(string)
+        }
+        
+        result = decodeValue(from: data)
+    }
+    
+    private func decodeValue<T: Decodable>(from data: Data) -> Result<T, Error> {
+        do {
+            let value = try decoder.decode(T.self, from: data)
+            return .success(value)
+        } catch {
+            Logging.error("Decode error: \(error)")
+            return .failure(decodeError(from: data, fallback: error))
+        }
+    }
+    
+    private func decodeError(from data: Data, fallback: Error) -> Error {
+        if let error = try? decoder.decode(Raw.Error.self, from: data) {
+            return error.presented
+        } else {
+            return fallback
         }
     }
 }

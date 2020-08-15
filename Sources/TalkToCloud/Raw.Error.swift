@@ -16,6 +16,18 @@
 
 import Foundation
 
-public struct User: Decodable {
-    let userRecordName: String
+extension Raw {
+    internal struct Error: Codable {
+        let serverErrorCode: String
+        let reason: String
+        let redirectURL: URL?
+
+        internal var presented: CloudError {
+            if serverErrorCode == "AUTHENTICATION_REQUIRED", let redirect = redirectURL {
+                return CloudError.authenticate(redirect)
+            }
+            
+            return CloudError.server(code: serverErrorCode, reason: reason)
+        }
+    }
 }
