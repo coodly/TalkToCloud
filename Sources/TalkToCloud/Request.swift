@@ -30,6 +30,7 @@ internal class Request<T: Decodable> {
     }
     
     private lazy var decoder = JSONDecoder()
+    private lazy var encoder = JSONEncoder()
     
     private let baseURL = URL(string: "https://api.apple-cloudkit.com/database/1/")!
     private let variables: Variables
@@ -57,11 +58,11 @@ internal class Request<T: Decodable> {
         execute(.get, to: path, in: database)
     }
     
-    internal func post(to path: String) {
-        execute(.post, to: path)
+    internal func post(to path: String, body: Raw.Body, in database: CloudDatabase) {
+        execute(.post, to: path, body: body, in: database)
     }
     
-    private func execute(_ method: Method, to path: String, in database: CloudDatabase = .public) {
+    private func execute(_ method: Method, to path: String, body: Raw.Body? = nil, in database: CloudDatabase = .public) {
         let fullQueryPath = "\(variables.container)/\(variables.env.rawValue)/\(database.rawValue)\(path)"
         var components = URLComponents(url: baseURL, resolvingAgainstBaseURL: true)!
         components.path = components.path.appending(fullQueryPath)
@@ -71,12 +72,29 @@ internal class Request<T: Decodable> {
         for (name, value) in variables.auth.params {
             url = url.appending(param: name, value: value)
         }
-        
+
         Logging.log("\(method.rawValue) to \(url.absoluteString)")
         
         let request = NSMutableURLRequest(url: url)
         request.httpMethod = method.rawValue
         
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        if let body = body {
+            do {
+                let data = try encoder.encode(body)
+                request.httpBody = data
+                
+                if let string = String(data: data, encoding: .utf8) {
+                    Logging.verbose("Body:")
+                    Logging.verbose(string)
+                }
+            } catch {
+                Logging.error("Encode body error: \(error)")
+                fatalError()
+            }
+        }
+                
         variables.fetch.fetch(request as URLRequest, completion: handle(_:response:error:))
     }
     
@@ -91,6 +109,10 @@ internal class Request<T: Decodable> {
             Logging.log("No response data")
             result = .failure(CloudError.noData)
             return
+        }
+        
+        if let token = variables.auth as? TokenAuthenticator {
+            token.markToken(from: response)
         }
         
         if let string = String(data: data, encoding: .utf8) {
