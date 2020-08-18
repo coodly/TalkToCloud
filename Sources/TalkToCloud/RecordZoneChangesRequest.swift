@@ -16,14 +16,16 @@
 
 import Foundation
 
-extension Raw {
-    internal struct Body: Encodable {
-        private var zones: [Raw.Zone]?
+internal class RecordZoneChangesRequest: Request<User> {
+    private let zones: [Raw.Zone]
+    
+    internal init(zones: [Raw.Zone], variables: Variables) {
+        self.zones = zones
         
-        internal func query(in zones: [Raw.Zone]) -> Raw.Body {
-            var modified = self
-            modified.zones = zones
-            return modified
-        }
+        super.init(variables: variables)
+    }
+    
+    override func performRequest() {
+        post(to: "/changes/zone", body: Raw.Body().query(in: zones), in: .private)
     }
 }

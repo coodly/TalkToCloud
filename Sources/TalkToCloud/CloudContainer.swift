@@ -140,8 +140,25 @@ public class CloudContainer {
         let request = DatabaseChangesRequest(variables: variables)
         let handler: ((Result<Raw.ZonesList, Error>) -> Void) = {
             result in
+            
+            switch result {
+            case .success(let list):
+                self.changes(in: list.zones)
+            case .failure(let error):
+                Logging.error("List changed zones error: \(error)")
+                fatalError()
+            }
         }
         request.perform(completion: handler)
+    }
+    
+    internal func changes(in zones: [Raw.Zone]) {
+        let request = RecordZoneChangesRequest(zones: zones, variables: variables)
+        request.perform() {
+            result in
+            
+            dump(result)
+        }
     }
     
     public func listZones() {
