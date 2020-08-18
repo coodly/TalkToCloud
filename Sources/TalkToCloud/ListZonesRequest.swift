@@ -16,6 +16,8 @@
 
 import Foundation
 
-internal class ChangesRequest: Request<User> {
-    
+internal class ListZonesRequest: Request<User> {
+    override func performRequest() {
+        get(from: "/zones/list", database: .private)
+    }
 }

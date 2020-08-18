@@ -135,6 +135,22 @@ public class CloudContainer {
         let request = UserRequest(variables: variables)
         request.perform(completion: completion)
     }
+    
+    public func changes() {
+        let request = DatabaseChangesRequest(variables: variables)
+        let handler: ((Result<Raw.ZonesList, Error>) -> Void) = {
+            result in
+        }
+        request.perform(completion: handler)
+    }
+    
+    public func listZones() {
+        let request = ListZonesRequest(variables: variables)
+        let handler: ((Result<User, Error>) -> Void) = {
+            result in
+        }
+        request.perform(completion: handler)
+    }
         
     private func send<T>(body: [String: AnyObject], to path: String, in database: CloudDatabase, completion: @escaping ((CloudResult<T>) -> ())) {
         let fullQueryPath = "/database/1/\(container)/\(env.rawValue)/\(database.rawValue)\(path)"
