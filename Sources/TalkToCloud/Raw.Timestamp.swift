@@ -16,16 +16,8 @@
 
 import Foundation
 
-internal class RecordZoneChangesRequest: Request<Raw.ZoneChangesList> {
-    private let zones: [Raw.Zone]
-    
-    internal init(zones: [Raw.Zone], variables: Variables) {
-        self.zones = zones
-        
-        super.init(variables: variables)
-    }
-    
-    override func performRequest() {
-        post(to: "/changes/zone", body: Raw.Body().query(in: zones), in: .private)
+extension Raw {
+    internal struct Timestamp: Codable {
+        let timestamp: Double
     }
 }
