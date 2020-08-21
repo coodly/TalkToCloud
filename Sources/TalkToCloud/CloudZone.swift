@@ -24,3 +24,9 @@ public struct CloudZone: Codable {
         zoneID.zoneName
     }
 }
+
+extension CloudZone {
+    internal var raw: Raw.Zone {
+        Raw.Zone(zoneID: zoneID)
+    }
+}

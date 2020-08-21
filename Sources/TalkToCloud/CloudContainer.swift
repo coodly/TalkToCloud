@@ -175,6 +175,15 @@ public class CloudContainer {
         }
         request.perform(completion: handler)
     }
+    
+    public func changes(in zone: CloudZone) {
+        let request = RecordZoneChangesRequest(zones: [zone.raw], variables: variables)
+        request.perform() {
+            result in
+            
+            dump(result)
+        }
+    }
         
     private func send<T>(body: [String: AnyObject], to path: String, in database: CloudDatabase, completion: @escaping ((CloudResult<T>) -> ())) {
         let fullQueryPath = "/database/1/\(container)/\(env.rawValue)/\(database.rawValue)\(path)"
