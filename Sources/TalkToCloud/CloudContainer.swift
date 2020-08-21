@@ -161,10 +161,17 @@ public class CloudContainer {
         }
     }
     
-    public func listZones() {
+    public func listZones(completion: @escaping ((Result<[CloudZone], Error>) -> Void)) {
         let request = ListZonesRequest(variables: variables)
-        let handler: ((Result<User, Error>) -> Void) = {
+        let handler: ((Result<CloudZonesList, Error>) -> Void) = {
             result in
+            
+            switch result {
+            case .success(let list):
+                completion(.success(list.zones))
+            case .failure(let error):
+                completion(.failure(error))
+            }
         }
         request.perform(completion: handler)
     }
