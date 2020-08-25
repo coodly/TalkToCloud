@@ -31,6 +31,7 @@ public enum CloudError: Error {
     case createAsset
     case uploadAsset
     case authenticate(URL)
+    case noChanges
 }
 
 public struct CloudResult<T: RemoteRecord> {
@@ -176,12 +177,28 @@ public class CloudContainer {
         request.perform(completion: handler)
     }
     
-    public func changes(in zone: CloudZone) {
-        let request = RecordZoneChangesRequest(zones: [zone.raw], variables: variables)
+    public func changes(in zone: CloudZone, completion: @escaping ((Result<RecordsCursor, Error>) -> Void)) {
+        let rawZone = zone.raw
+        let request = RecordZoneChangesRequest(zones: [rawZone], variables: variables)
         request.perform() {
             result in
             
-            dump(result)
+            switch result {
+            case .success(let changes):
+                guard let zoneChanges = changes.changes(in: rawZone) else {
+                    completion(.failure(CloudError.noChanges))
+                    return
+                }
+                
+                let records = zoneChanges.records.filter({ !$0.deleted })
+                let deleted = zoneChanges.records.filter({ $0.deleted })
+                Logging.verbose("Records: \(records.count)")
+                Logging.verbose("Deleted: \(deleted.count)")
+                let cursor = RecordsCursor(records: records, deleted: deleted)
+                completion(.success(cursor))
+            case .failure(let error):
+                completion(.failure(error))
+            }
         }
     }
         

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Coodly LLC
+ * Copyright 2016 Coodly LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,6 @@
 
 import Foundation
 
-extension Raw {
-    internal struct ZoneChangesList: Codable {
-        let zones: [Raw.ZoneChanges]
-
-        internal func changes(in zone: Raw.Zone) -> Raw.ZoneChanges? {
-            zones.first(where: { $0.zoneID.zoneName == zone.zoneID.zoneName })
-        }
-    }
+public protocol CloudRecord: Codable {
+    static var recordType: String { get }
 }

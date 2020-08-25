@@ -236,8 +236,8 @@ internal struct RetryAfterResponse: Decodable {
     let retryAfter: TimeInterval
 }
 
-private extension Double {
-    var millisecondsToDate: Date {
+extension Double {
+    internal var millisecondsToDate: Date {
         let seconds: TimeInterval = self / 1000.0
         return Date(timeIntervalSince1970: seconds)
     }
