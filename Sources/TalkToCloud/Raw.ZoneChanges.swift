@@ -19,6 +19,8 @@ import Foundation
 extension Raw {
     internal struct ZoneChanges: Codable {
         let zoneID: Raw.ZoneID
+        let moreComing: Bool
+        let syncToken: String
         let records: [Raw.Record]
     }
 }

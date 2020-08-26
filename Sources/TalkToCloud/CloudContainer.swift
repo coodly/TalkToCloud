@@ -136,32 +136,7 @@ public class CloudContainer {
         let request = UserRequest(variables: variables)
         request.perform(completion: completion)
     }
-    
-    public func changes() {
-        let request = DatabaseChangesRequest(variables: variables)
-        let handler: ((Result<Raw.ZonesList, Error>) -> Void) = {
-            result in
-            
-            switch result {
-            case .success(let list):
-                self.changes(in: list.zones)
-            case .failure(let error):
-                Logging.error("List changed zones error: \(error)")
-                fatalError()
-            }
-        }
-        request.perform(completion: handler)
-    }
-    
-    internal func changes(in zones: [Raw.Zone]) {
-        let request = RecordZoneChangesRequest(zones: zones, variables: variables)
-        request.perform() {
-            result in
-            
-            dump(result)
-        }
-    }
-    
+        
     public func listZones(completion: @escaping ((Result<[CloudZone], Error>) -> Void)) {
         let request = ListZonesRequest(variables: variables)
         let handler: ((Result<CloudZonesList, Error>) -> Void) = {
@@ -177,9 +152,9 @@ public class CloudContainer {
         request.perform(completion: handler)
     }
     
-    public func changes(in zone: CloudZone, completion: @escaping ((Result<RecordsCursor, Error>) -> Void)) {
+    public func changes(in zone: CloudZone, since token: String? = nil, completion: @escaping ((Result<RecordsCursor, Error>) -> Void)) {
         let rawZone = zone.raw
-        let request = RecordZoneChangesRequest(zones: [rawZone], variables: variables)
+        let request = RecordZoneChangesRequest(zone: rawZone, token: token, variables: variables)
         request.perform() {
             result in
             
@@ -194,7 +169,16 @@ public class CloudContainer {
                 let deleted = zoneChanges.records.filter({ $0.deleted })
                 Logging.verbose("Records: \(records.count)")
                 Logging.verbose("Deleted: \(deleted.count)")
-                let cursor = RecordsCursor(records: records, deleted: deleted)
+                let moreComing = zoneChanges.moreComing
+                let continuation: (() -> Void)?
+                if moreComing {
+                    continuation = {
+                        self.changes(in: zone, since: zoneChanges.syncToken, completion: completion)
+                    }
+                } else {
+                    continuation = nil
+                }
+                let cursor = RecordsCursor(records: records, deleted: deleted, moreComing: zoneChanges.moreComing, syncToken: zoneChanges.syncToken, continuation: continuation)
                 completion(.success(cursor))
             case .failure(let error):
                 completion(.failure(error))

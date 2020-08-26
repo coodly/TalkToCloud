@@ -25,5 +25,14 @@ extension Raw {
             modified.zones = zones
             return modified
         }
+        
+        internal func query(in zone: Raw.Zone, since token: String?) -> Raw.Body {
+            var withToken = zone
+            withToken.syncToken = token
+            
+            var modified = self
+            modified.zones = [withToken]
+            return modified
+        }
     }
 }
