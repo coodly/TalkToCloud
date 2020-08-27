@@ -25,14 +25,20 @@ public enum ReferenceAction: String, Codable {
 public struct RemoteReference {
     public let recordName: String
     let action: ReferenceAction
+    let zone: CloudZone?
     
-    public init(recordName: String, action: ReferenceAction = .deleteSelf) {
+    public init(recordName: String, action: ReferenceAction = .deleteSelf, zone: CloudZone? = nil) {
         self.recordName = recordName
         self.action = action
+        self.zone = zone
     }
     
-    func dictionary() -> [String: String] {
-        return ["recordName": recordName, "action": action.rawValue]
+    func dictionary() -> [String: AnyObject] {
+        var result: [String: AnyObject] = ["recordName": recordName as AnyObject, "action": action.rawValue as AnyObject]
+        if let zone = zone {
+            result["zoneID"] = ["zoneName": zone.name] as AnyObject
+        }
+        return result
     }
 }
 

@@ -251,6 +251,10 @@ public class CloudContainer {
         fetch.fetch(request as URLRequest) {
             data, response, error in
                         
+            if let token = variables.auth as? TokenAuthenticator {
+                token.markToken(from: response)
+            }
+
             self.handleResult(data: data, response: response, error: error, cursor: cursor, completion: completion)
         }
     }
