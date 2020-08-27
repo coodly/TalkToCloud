@@ -17,9 +17,20 @@
 import Foundation
 
 extension Raw {
-    internal struct ZoneID: Codable {
-        let zoneName: String
-        let ownerRecordName: String?
-        let zoneType: String?
+    internal struct Operation: Codable {
+        let operationType: OperationType
+        var zone: Raw.Zone?
+        
+        static var create: Operation {
+            Operation(operationType: .create)
+        }
+        
+        func zone(named: String) -> Operation {
+            var modified = self
+            
+            modified.zone = Raw.Zone(zoneID: Raw.ZoneID(zoneName: named, ownerRecordName: nil, zoneType: nil), syncToken: nil)
+            
+            return modified
+        }
     }
 }

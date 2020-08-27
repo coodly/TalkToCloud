@@ -17,21 +17,30 @@
 import Foundation
 
 extension Raw {
-    internal struct Body: Encodable {
+    internal struct Request: Encodable {
         private var zones: [Raw.Zone]?
+        private var operations: [Raw.Operation]?
         
-        internal func query(in zones: [Raw.Zone]) -> Raw.Body {
+        internal func query(in zones: [Raw.Zone]) -> Raw.Request {
             var modified = self
             modified.zones = zones
             return modified
         }
         
-        internal func query(in zone: Raw.Zone, since token: String?) -> Raw.Body {
+        internal func query(in zone: Raw.Zone, since token: String?) -> Raw.Request {
             var withToken = zone
             withToken.syncToken = token
             
             var modified = self
             modified.zones = [withToken]
+            return modified
+        }
+        
+        internal func modify(operation: Operation) -> Request {
+            var modified = self
+            
+            modified.operations = [operation]
+            
             return modified
         }
     }

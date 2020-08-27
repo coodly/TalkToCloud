@@ -152,6 +152,22 @@ public class CloudContainer {
         request.perform(completion: handler)
     }
     
+    
+    public func create(zone named: String, completion: @escaping ((Result<CloudZone, Error>) -> Void)) {
+        let request = CreateZoneRequest(name: named, variables: variables)
+        request.perform() {
+            result in
+            
+            switch result {
+            case .success(let list):
+                completion(.success(list.zones.first!))
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
+
+    
     public func changes(in zone: CloudZone, since token: String? = nil, completion: @escaping ((Result<RecordsCursor, Error>) -> Void)) {
         let rawZone = zone.raw
         let request = RecordZoneChangesRequest(zone: rawZone, token: token, variables: variables)

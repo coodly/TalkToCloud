@@ -58,11 +58,11 @@ internal class Request<T: Decodable> {
         execute(.get, to: path, in: database)
     }
     
-    internal func post(to path: String, body: Raw.Body, in database: CloudDatabase) {
+    internal func post(to path: String, body: Raw.Request, in database: CloudDatabase) {
         execute(.post, to: path, body: body, in: database)
     }
     
-    private func execute(_ method: Method, to path: String, body: Raw.Body? = nil, in database: CloudDatabase = .public) {
+    private func execute(_ method: Method, to path: String, body: Raw.Request? = nil, in database: CloudDatabase = .public) {
         let fullQueryPath = "\(variables.container)/\(variables.env.rawValue)/\(database.rawValue)\(path)"
         var components = URLComponents(url: baseURL, resolvingAgainstBaseURL: true)!
         components.path = components.path.appending(fullQueryPath)

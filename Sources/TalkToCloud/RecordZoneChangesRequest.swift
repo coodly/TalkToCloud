@@ -28,7 +28,7 @@ internal class RecordZoneChangesRequest: Request<Raw.ZoneChangesList> {
     }
     
     override func performRequest() {
-        let body = Raw.Body().query(in: zone, since: token)
+        let body = Raw.Request().query(in: zone, since: token)
         post(to: "/changes/zone", body: body, in: .private)
     }
 }
