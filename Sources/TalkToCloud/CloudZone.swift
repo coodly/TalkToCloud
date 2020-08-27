@@ -26,7 +26,15 @@ public struct CloudZone: Codable {
 }
 
 extension CloudZone {
+    public init(name: String) {
+        zoneID = Raw.ZoneID(zoneName: name, ownerRecordName: nil, zoneType: nil)
+        syncToken = nil
+    }
+}
+
+extension CloudZone {
     internal var raw: Raw.Zone {
         Raw.Zone(zoneID: zoneID)
     }
 }
+

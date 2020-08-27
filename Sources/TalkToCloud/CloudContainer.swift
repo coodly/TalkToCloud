@@ -70,12 +70,15 @@ public class CloudContainer {
         self.fetch = fetch
     }
     
-    public func save<T>(records: [RemoteRecord], in database: CloudDatabase = .public, completion: @escaping ((CloudResult<T>) -> ())) {
+    public func save<T>(records: [RemoteRecord], zone: CloudZone? = nil, in database: CloudDatabase = .public, completion: @escaping ((CloudResult<T>) -> ())) {
         var operations = [[String: AnyObject]]()
         for r in records {
             operations.append(r.toOperation())
         }
-        let body: [String: AnyObject] = ["operations": operations as AnyObject]
+        var body: [String: AnyObject] = ["operations": operations as AnyObject]
+        if let zone = zone {
+            body["zoneID"] = ["zoneName": zone.name] as AnyObject
+        }
         send(body: body, to: "/records/modify", in: database, completion: completion)
     }
 
@@ -213,9 +216,13 @@ public class CloudContainer {
         var components = URLComponents(url: CloudContainer.baseURL, resolvingAgainstBaseURL: true)!
         components.path = components.path.appending(path)
         
-        let url = components.url!
+        var url = components.url!
         
         Logging.log("POST to \(url)")
+
+        for (name, value) in variables.auth.params {
+            url = url.appending(param: name, value: value)
+        }
         
         let request = NSMutableURLRequest(url: url)
         request.httpMethod = "POST"
@@ -224,6 +231,7 @@ public class CloudContainer {
         for (name, value) in additionalHeaders {
             request.addValue(value, forHTTPHeaderField: name)
         }
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         
         Logging.log("Attach body \(data.count)")
         request.httpBody = data

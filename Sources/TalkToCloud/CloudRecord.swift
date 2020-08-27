@@ -21,4 +21,5 @@ public protocol CloudRecord: Codable {
     
     var recordName: String? { get set }
     var recordChangeTag: String? { get set }
+    var deleted: Bool { get set }
 }
