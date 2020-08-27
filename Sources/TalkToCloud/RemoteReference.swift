@@ -16,7 +16,7 @@
 
 import Foundation
 
-public enum ReferenceAction: String, Decodable {
+public enum ReferenceAction: String, Codable {
     case none = "NONE"
     case deleteSelf = "DELETE_SELF"
     case validate = "VALIDATE"

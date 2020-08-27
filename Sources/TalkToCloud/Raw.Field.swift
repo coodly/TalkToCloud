@@ -48,8 +48,8 @@ extension Raw {
         var int64List: [Int64]? = nil
         var timestamp: Double? = nil
         var timestampList: [Double]? = nil
-        var reference: RemoteReference? = nil
-        var referenceList: [RemoteReference]? = nil
+        var reference: CloudReference? = nil
+        var referenceList: [CloudReference]? = nil
         var assetDownload: AssetDownloadTarget?
 
         init(from decoder: Decoder) throws {
@@ -76,13 +76,13 @@ extension Raw {
             case .timestampList:
                 timestampList = try? values.decode([Double].self, forKey: .value)
             case .reference:
-                reference = try? values.decode(RemoteReference.self, forKey: .value)
+                reference = try? values.decode(CloudReference.self, forKey: .value)
             case .referenceList:
-                referenceList = try? values.decode([RemoteReference].self, forKey: .value)
+                referenceList = try? values.decode([CloudReference].self, forKey: .value)
             case .assetId:
                 assetDownload = try? values.decode(AssetDownloadTarget.self, forKey: .value)
             case .unknownList:
-                break
+                referenceList = []
             }
         }
         

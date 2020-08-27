@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Coodly LLC
+ * Copyright 2020 Coodly LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,8 @@
 
 import Foundation
 
-public protocol CloudRecord: Codable {
-    static var recordType: String { get }
-    
-    var recordName: String? { get set }
-    var recordChangeTag: String? { get set }
+public struct CloudReference: Codable {
+    public let recordName: String
+    let action: ReferenceAction
+    let zoneID: Raw.ZoneID
 }

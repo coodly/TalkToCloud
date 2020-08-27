@@ -16,6 +16,15 @@
 
 import Foundation
 
+extension String {
+    fileprivate static let recordName = "recordName"
+    fileprivate static let recordChangeTag = "recordChangeTag"
+    fileprivate static let created = "created"
+    fileprivate static let modified = "modified"
+    
+    fileprivate static let system = [recordName, recordChangeTag, created, modified]
+}
+
 internal class RecordDecoder: Decoder {
     var codingPath: [CodingKey] = []
     
@@ -46,11 +55,19 @@ internal class RecordDecoder: Decoder {
         }
         
         func contains(_ key: Key) -> Bool {
-            fatalError()
+            if record.fields.keys.contains(key.stringValue) {
+                return true
+            }
+            
+            return String.system.contains(key.stringValue)
         }
         
         func decodeNil(forKey key: Key) throws -> Bool {
-            fatalError()
+            if String.system.contains(key.stringValue) {
+                return false
+            }
+            
+            fatalError(key.stringValue)
         }
         
         func decode(_ type: Bool.Type, forKey key: Key) throws -> Bool {
@@ -58,7 +75,16 @@ internal class RecordDecoder: Decoder {
         }
         
         func decode(_ type: String.Type, forKey key: Key) throws -> String {
-            try field(for: key).string!
+            switch key.stringValue {
+            case "recordName":
+                return record.recordName
+            case "recordChangeTag":
+                return record.recordChangeTag
+            default:
+                break
+            }
+            
+            return try field(for: key).string!
         }
         
         func decode(_ type: Double.Type, forKey key: Key) throws -> Double {
@@ -86,7 +112,7 @@ internal class RecordDecoder: Decoder {
         }
         
         func decode(_ type: Int64.Type, forKey key: Key) throws -> Int64 {
-            fatalError()
+            try field(for: key).int64!
         }
         
         func decode(_ type: UInt.Type, forKey key: Key) throws -> UInt {
@@ -116,7 +142,17 @@ internal class RecordDecoder: Decoder {
             if T.self == Date.self, key.stringValue == "modifiedAt" {
                 return record.modified.date as! T
             }
-            fatalError()
+            if T.self == Date.self {
+                return try field(for: key).timestamp!.millisecondsToDate as! T
+            }
+            if T.self == CloudReference.self {
+                return try field(for: key).reference as! T
+            }
+            if T.self == [CloudReference].self {
+                return try field(for: key).referenceList as! T
+            }
+            
+            fatalError(key.stringValue)
         }
         
         func nestedContainer<NestedKey>(keyedBy type: NestedKey.Type, forKey key: Key) throws -> KeyedDecodingContainer<NestedKey> where NestedKey : CodingKey {
