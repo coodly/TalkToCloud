@@ -86,6 +86,8 @@ extension RemoteRecord {
                 result[label] = ["value": value] as AnyObject
             } else if let value = child.value as? Int {
                 result[label] = ["value": value] as AnyObject
+            } else if let value = child.value as? Int64 {
+                result[label] = ["value": value] as AnyObject
             } else if let value = child.value as? Date {
                 result[label] = ["value": value.milliseconds()] as AnyObject
             } else if let value = child.value as? Double {
@@ -96,14 +98,17 @@ extension RemoteRecord {
                 result[label] = ["value": value] as AnyObject
             } else if let value = child.value as? [Int] {
                 result[label] = ["value": value] as AnyObject
-            } else if let remote = (child.value as AnyObject) as? RemoteReference {
+            } else if let remote = child.value as? RemoteReference {
                 let value = remote.dictionary()
+                result[label] = ["value": value] as AnyObject
+            } else if let remote = child.value as? [RemoteReference] {
+                let value = remote.map({ $0.dictionary() })
                 result[label] = ["value": value] as AnyObject
             } else if let asset = child.value as? AssetFileDefinition {
                 let value = asset.dictionary()
                 result[label] = ["value": value] as AnyObject
             } else {
-                Logging.verbose("Could not cast \(child)")
+                Logging.verbose("Could not cast \(child) - \(type(of: child))")
             }
         }
         return result
