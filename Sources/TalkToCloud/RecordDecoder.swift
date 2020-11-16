@@ -67,7 +67,7 @@ internal class RecordDecoder: Decoder {
                 return false
             }
             
-            fatalError(key.stringValue)
+            return true
         }
         
         func decode(_ type: Bool.Type, forKey key: Key) throws -> Bool {
