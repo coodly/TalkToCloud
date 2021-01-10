@@ -17,19 +17,7 @@
 import Foundation
 
 extension Raw {
-    internal struct RecordOrError: Codable {
+    internal struct RecordID: Codable {
         let recordName: String
-        let recordType: String?
-        let recordChangeTag: String?
-        let fields: [String: Raw.Field]?
-        let created: Raw.Timestamp?
-        let modified: Raw.Timestamp?
-        let deleted: Bool?
-        let reason: String?
-        let serverErrorCode: String?
-        
-        internal var isDeleted: Bool {
-            deleted ?? false
-        }
     }
 }

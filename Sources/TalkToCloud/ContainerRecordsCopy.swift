@@ -100,7 +100,7 @@ internal class ContainerRecordsCopy {
                 Logging.error("List changes error \(error)")
             case .success(let cursor):
                 Logging.log("Retrieved \(cursor.records.count) records and \(cursor.deleted.count) deletions")
-                self.write(records: cursor.records, into: zone) {
+                self.write(records: cursor.records, deletions: cursor.deleted, into: zone) {
                     result in
                     
                     switch result {
@@ -125,10 +125,20 @@ internal class ContainerRecordsCopy {
         cursor.continuation?()
     }
     
-    private func write(records: [Raw.Record], into zone: CloudZone, completion: @escaping ((Result<Bool, Error>) -> Void)) {
-        Logging.log("Write \(records.count) records into \(zone.name)")
+    private func write(records: [Raw.Record], deletions: [Raw.RecordID], into zone: CloudZone, completion: @escaping ((Result<Bool, Error>) -> Void)) {
+        Logging.log("Write \(records.count) records and \(deletions.count) deletions into \(zone.name)")
+        guard records.count > 0 || deletions.count > 0 else {
+            completion(.success(true))
+            return
+        }
+        
         let saved = records.map({ Raw.SavedRecord(record: $0, withChange: false) })
-        let operations = saved.map({ Raw.Operation(record: $0) })
+        var operations = saved.map({ Raw.Operation(record: $0) })
+        deletions.forEach() {
+            delete in
+            
+            operations.append(Raw.Operation(delete: delete))
+        }
         let body = Raw.Body(zoneID: zone.zoneID, operations: operations)
         target.recordsModify(body: body, in: .private) {
             result in
@@ -139,6 +149,7 @@ internal class ContainerRecordsCopy {
                 completion(.failure(error))
             case .success(let cursor):
                 Logging.log("Records saved \(cursor.records.count)")
+                Logging.log("Records deleted \(cursor.deleted.count)")
                 Logging.log("Record errors \(cursor.errors.count)")
                 self.resolve(errors: cursor.errors, on: records, in: zone, completion: completion)
             }

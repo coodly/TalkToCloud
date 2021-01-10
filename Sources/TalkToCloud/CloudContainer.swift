@@ -156,8 +156,8 @@ public class CloudContainer {
                     return
                 }
                 
-                let records = zoneChanges.records.filter({ !$0.deleted })
-                let deleted = zoneChanges.records.filter({ $0.deleted })
+                let records = zoneChanges.received
+                let deleted = zoneChanges.deleted
                 Logging.verbose("Records: \(records.count)")
                 Logging.verbose("Deleted: \(deleted.count)")
                 let moreComing = zoneChanges.moreComing

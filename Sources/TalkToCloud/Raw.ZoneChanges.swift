@@ -21,6 +21,18 @@ extension Raw {
         let zoneID: Raw.ZoneID
         let moreComing: Bool
         let syncToken: String
-        let records: [Raw.Record]
+        let records: [Raw.RecordOrError]
+        
+        internal var received: [Raw.Record] {
+            records.compactMap({ Raw.Record(from: $0) })
+        }
+
+        internal var deleted: [Raw.RecordID] {
+            records.filter(\.isDeleted).map({ Raw.RecordID(recordName: $0.recordName) })
+        }
+        
+        internal var errors: [Raw.RecordError] {
+            records.compactMap({ Raw.RecordError(from: $0) })
+        }
     }
 }

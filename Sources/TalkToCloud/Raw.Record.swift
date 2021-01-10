@@ -24,7 +24,6 @@ extension Raw {
         let fields: [String: Raw.Field]
         let created: Raw.Timestamp
         let modified: Raw.Timestamp
-        let deleted: Bool
     }
 }
 
@@ -34,8 +33,7 @@ extension Raw.Record {
               let recordChangeTag = received.recordChangeTag,
               let fields = received.fields,
               let created = received.created,
-              let modified = received.modified,
-              let deleted = received.deleted
+              let modified = received.modified
         else {
             return nil
         }
@@ -46,6 +44,5 @@ extension Raw.Record {
         self.fields = fields
         self.created = created
         self.modified = modified
-        self.deleted = deleted
     }
 }

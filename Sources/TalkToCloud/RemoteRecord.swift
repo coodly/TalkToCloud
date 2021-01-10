@@ -22,6 +22,7 @@ enum OperationType: String, Codable {
     case create = "create"
     case update = "update"
     case delete = "delete"
+    case forceDelete = "forceDelete"
 }
 
 public protocol RemoteRecord {

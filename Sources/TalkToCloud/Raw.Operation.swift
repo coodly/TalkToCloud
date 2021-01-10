@@ -56,4 +56,9 @@ extension Raw.Operation {
             
         self.record = record
     }
+    
+    internal init(delete: Raw.RecordID) {
+        operationType = .forceDelete
+        record = Raw.SavedRecord(delete: delete)
+    }
 }

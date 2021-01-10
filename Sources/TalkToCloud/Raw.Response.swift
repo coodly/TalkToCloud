@@ -21,11 +21,11 @@ extension Raw {
         private let records: [Raw.RecordOrError]
         
         internal var received: [Raw.Record] {
-            records.compactMap({ Raw.Record(from: $0) }).filter({ !$0.deleted })
+            records.compactMap({ Raw.Record(from: $0) })
         }
 
-        internal var deleted: [Raw.Record] {
-            records.compactMap({ Raw.Record(from: $0) }).filter(\.deleted)
+        internal var deleted: [Raw.RecordID] {
+            records.filter(\.isDeleted).map({ Raw.RecordID(recordName: $0.recordName) })
         }
         
         internal var errors: [Raw.RecordError] {

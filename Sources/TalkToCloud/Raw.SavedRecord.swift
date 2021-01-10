@@ -36,4 +36,11 @@ extension Raw.SavedRecord {
         self.recordChangeTag = withChange ? record.recordChangeTag : nil
         self.fields = record.fields
     }
+    
+    internal init(delete: Raw.RecordID) {
+        recordName = delete.recordName
+        recordType = "Forced - does not matter"
+        recordChangeTag = "Forced - does not matter"
+        fields = [:]
+    }
 }
