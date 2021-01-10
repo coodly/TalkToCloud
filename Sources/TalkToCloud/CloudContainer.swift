@@ -59,7 +59,7 @@ public class CloudContainer {
     private let auth: Authenticator
     private let fetch: NetworkFetch
     
-    private let variables: Variables
+    internal let variables: Variables
     
     public init(identifier: String, env: Environment, authenticator: Authenticator, fetch: NetworkFetch) {
         variables = Variables(container: identifier, env: env, auth: authenticator, fetch: fetch)
@@ -142,37 +142,6 @@ public class CloudContainer {
         let request = UserRequest(variables: variables)
         request.perform(completion: completion)
     }
-        
-    public func listZones(completion: @escaping ((Result<[CloudZone], Error>) -> Void)) {
-        let request = ListZonesRequest(variables: variables)
-        let handler: ((Result<CloudZonesList, Error>) -> Void) = {
-            result in
-            
-            switch result {
-            case .success(let list):
-                completion(.success(list.zones))
-            case .failure(let error):
-                completion(.failure(error))
-            }
-        }
-        request.perform(completion: handler)
-    }
-    
-    
-    public func create(zone named: String, completion: @escaping ((Result<CloudZone, Error>) -> Void)) {
-        let request = CreateZoneRequest(name: named, variables: variables)
-        request.perform() {
-            result in
-            
-            switch result {
-            case .success(let list):
-                completion(.success(list.zones.first!))
-            case .failure(let error):
-                completion(.failure(error))
-            }
-        }
-    }
-
     
     public func changes(in zone: CloudZone, since token: String? = nil, completion: @escaping ((Result<RecordsCursor, Error>) -> Void)) {
         let rawZone = zone.raw

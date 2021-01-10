@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Coodly LLC
+ * Copyright 2021 Coodly LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,27 +16,10 @@
 
 import Foundation
 
-public struct CloudZone: Codable {
-    let zoneID: Raw.ZoneID
-    let syncToken: String?
-    
-    public var name: String {
-        zoneID.zoneName
-    }
-    
-    internal static let defaultZone = CloudZone(name: "_defaultZone")
-}
-
-extension CloudZone {
-    public init(name: String) {
-        zoneID = Raw.ZoneID(zoneName: name, ownerRecordName: nil, zoneType: nil)
-        syncToken = nil
+extension CloudContainer {
+    public func copyChanges(to target: CloudContainer) {
+        Logging.log("Copy changes")
+        let copy = ContainerRecordsCopy(source: self, target: target)
+        copy.execute()
     }
 }
-
-extension CloudZone {
-    internal var raw: Raw.Zone {
-        Raw.Zone(zoneID: zoneID)
-    }
-}
-
