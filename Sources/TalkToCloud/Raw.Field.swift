@@ -114,7 +114,7 @@ extension Raw {
             case .assetId:
                 fatalError()
             case .unknownList:
-                fatalError()
+                try container.encode(referenceList, forKey: .value)
             }
         }
     }
