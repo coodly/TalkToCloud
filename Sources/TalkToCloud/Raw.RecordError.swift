@@ -25,6 +25,10 @@ extension Raw {
         internal var isConflict: Bool {
             serverErrorCode == "CONFLICT"
         }
+        
+        internal var isAtomic: Bool {
+            serverErrorCode == "ATOMIC_ERROR"
+        }
     }
 }
 

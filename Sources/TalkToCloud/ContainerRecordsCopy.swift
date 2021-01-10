@@ -145,9 +145,15 @@ internal class ContainerRecordsCopy {
     }
     
     private func resolve(errors: [Raw.RecordError], on records: [Raw.Record], in zone: CloudZone, completion: @escaping ((Result<Bool, Error>) -> Void)) {
+        if errors.count == 0 {
+            Logging.log("No errors. Continue")
+            completion(.success(true))
+            return
+        }
+        
         let conflicts = errors.filter(\.isConflict)
         if conflicts.count == 0 {
-            completion(.success(true))
+            completion(.failure(CloudError.undefined))
             return
         }
 
@@ -163,30 +169,29 @@ internal class ContainerRecordsCopy {
                 completion(.failure(error))
             case .success(let cursor):
                 Logging.log("Lookup returned \(cursor.records.count) records")
-                self.modify(records: cursor.records, with: records, in: zone, completion: completion)
+                self.modify(conflicts: cursor.records, with: records, in: zone, completion: completion)
             }
         }
     }
     
-    private func modify(records: [Raw.Record], with original: [Raw.Record], in zone: CloudZone, completion: @escaping ((Result<Bool, Error>) -> Void)) {
+    private func modify(conflicts: [Raw.Record], with original: [Raw.Record], in zone: CloudZone, completion: @escaping ((Result<Bool, Error>) -> Void)) {
         var modified = [Raw.SavedRecord]()
-        for record in records {
-            guard let source = original.first(where: { $0.recordName == record.recordName }) else {
-                continue
+        for record in original {
+            if let withConflict = conflicts.first(where: { $0.recordName == record.recordName }) {
+                let saved = Raw.SavedRecord(record: withConflict, withChange: true).replacing(fields: record.fields)
+                modified.append(saved)
+            } else {
+                modified.append(Raw.SavedRecord(record: record, withChange: false))
             }
-            
-            let saved = Raw.SavedRecord(record: record, withChange: true).replacing(fields: source.fields)
-            modified.append(saved)
         }
-        
-        guard modified.count > 0 else {
-            completion(.success(true))
+        guard modified.count == original.count else {
+            completion(.failure(CloudError.undefined))
             return
         }
         
         Logging.log("Will save \(modified.count) refreshed records")
-        let operations = modified.map({ Raw.Operation(record: $0) }).first!
-        let body = Raw.Body(zoneID: zone.zoneID, operations: [operations])
+        let operations = modified.map({ Raw.Operation(record: $0) })
+        let body = Raw.Body(zoneID: zone.zoneID, operations: operations)
         target.recordsModify(body: body, in: .private) {
             result in
             
