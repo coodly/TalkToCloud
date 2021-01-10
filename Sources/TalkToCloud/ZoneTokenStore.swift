@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Coodly LLC
+ * Copyright 2020 Coodly LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,7 @@
 
 import Foundation
 
-extension CloudContainer {
-    public func copyChanges(to target: CloudContainer, sourceToken: ZoneTokenStore) {
-        Logging.log("Copy changes")
-        let copy = ContainerRecordsCopy(source: self, target: target, sourceToken: sourceToken)
-        copy.execute()
-    }
+public protocol ZoneTokenStore {
+    func knownToken(in zone: CloudZone) -> String?
+    func mark(token: String, in zone: CloudZone)
 }

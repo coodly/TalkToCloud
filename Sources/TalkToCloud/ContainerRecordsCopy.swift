@@ -19,9 +19,11 @@ import Foundation
 internal class ContainerRecordsCopy {
     private let source: CloudContainer
     private let target: CloudContainer
-    internal init(source: CloudContainer, target: CloudContainer) {
+    private let sourceToken: ZoneTokenStore
+    internal init(source: CloudContainer, target: CloudContainer, sourceToken: ZoneTokenStore) {
         self.source = source
         self.target = target
+        self.sourceToken = sourceToken
     }
     
     internal func execute() {
@@ -51,8 +53,10 @@ internal class ContainerRecordsCopy {
             switch result {
             case .success(let existing):
                 Logging.log("Target has zones \(existing.map(\.name).sorted())")
+                var targetZonesCount = 0
                 for zone in zones {
                     if existing.contains(where: { $0.name == zone.name }) {
+                        targetZonesCount += 1
                         continue
                     }
                     
@@ -63,14 +67,26 @@ internal class ContainerRecordsCopy {
                         switch result {
                         case .success(let created):
                             Logging.log("Created zone named \(created.name)")
+                            targetZonesCount += 1
                         case .failure(let error):
                             Logging.error("Create target zone error \(error)")
                         }
                     }
                 }
+                
+                guard targetZonesCount == zones.count else {
+                    Logging.error("Missing target zones?")
+                    return
+                }
+                
+                self.performCopy()
             case .failure(let error):
                 Logging.error("List target zones error \(error)")
             }
         }
+    }
+    
+    private func performCopy() {
+        Logging.log("Perform records copy")
     }
 }
