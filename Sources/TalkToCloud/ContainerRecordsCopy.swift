@@ -108,8 +108,8 @@ internal class ContainerRecordsCopy {
     private func write(records: [Raw.Record], into zone: CloudZone) {
         Logging.log("Write \(records.count) records into \(zone.name)")
         let saved = records.map({ Raw.SavedRecord(record: $0, withChange: false) })
-        let operations = saved.map({ Raw.Operation.create.with(record: $0) })
-        let body = Raw.Body(zone: zone, operations: operations)
+        let operations = saved.map({ Raw.Operation(record: $0) })
+        let body = Raw.Body(zoneID: zone.zoneID, operations: operations)
         target.recordsModify(body: body, in: .private) {
             result in
             
@@ -119,6 +119,62 @@ internal class ContainerRecordsCopy {
             case .success(let cursor):
                 Logging.log("Records saved \(cursor.records.count)")
                 Logging.log("Record errors \(cursor.errors.count)")
+                self.resolve(errors: cursor.errors, on: records, in: zone)
+            }
+        }
+    }
+    
+    private func resolve(errors: [Raw.RecordError], on records: [Raw.Record], in zone: CloudZone) {
+        let conflicts = errors.filter(\.isConflict)
+        Logging.log("Have \(conflicts.count) conflicts")
+        guard conflicts.count > 0 else {
+            return
+        }
+        
+        let names = conflicts.map(\.recordName)
+        target.codedLookup(of: names, zone: zone, in: .private) {
+            result in
+            
+            switch result {
+            case .failure(let error):
+                Logging.log("Lookup error \(error)")
+            case .success(let cursor):
+                Logging.log("Lookup returned \(cursor.records.count) records")
+                self.modify(records: cursor.records, with: records, in: zone)
+            }
+        }
+    }
+    
+    private func modify(records: [Raw.Record], with original: [Raw.Record], in zone: CloudZone) {
+        var modified = [Raw.SavedRecord]()
+        for record in records {
+            guard let source = original.first(where: { $0.recordName == record.recordName }) else {
+                continue
+            }
+            
+            let saved = Raw.SavedRecord(record: record, withChange: true).replacing(fields: source.fields)
+            modified.append(saved)
+        }
+        
+        guard modified.count > 0 else {
+            return
+        }
+        
+        Logging.log("Will save \(modified.count) refreshed records")
+        let operations = modified.map({ Raw.Operation(record: $0) }).first!
+        let body = Raw.Body(zoneID: zone.zoneID, operations: [operations])
+        target.recordsModify(body: body, in: .private) {
+            result in
+            
+            switch result {
+            case .failure(let error):
+                Logging.error("Modify error \(error)")
+            case .success(let cursor):
+                Logging.log("Modified \(cursor.records.count) records")
+                if cursor.errors.count > 0 {
+                    Logging.error("Had \(cursor.errors.count) errors")
+                    cursor.errors.forEach({ Logging.error($0) })
+                }
             }
         }
     }

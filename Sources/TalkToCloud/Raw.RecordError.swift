@@ -21,6 +21,10 @@ extension Raw {
         let recordName: String
         let reason: String
         let serverErrorCode: String
+
+        internal var isConflict: Bool {
+            serverErrorCode == "CONFLICT"
+        }
     }
 }
 

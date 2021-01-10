@@ -311,6 +311,26 @@ public class CloudContainer {
 }
 
 extension CloudContainer {
+    internal func codedLookup(of names: [String], zone: CloudZone, in database: CloudDatabase, completion: @escaping ((Result<RecordsCursor, Error>) -> Void)) {
+        let body = Raw.LookupRequest(records: names.map({ Raw.LookupName(recordName: $0) }), zoneID: zone.zoneID)
+        
+        let handler: ((CloudCodedResult<Raw.Response>) -> Void) = {
+            result in
+
+            if let error = result.error {
+                completion(.failure(error))
+            } else if let response = result.result {
+                let records = response.received
+                let errors = response.errors
+                
+                let cursor = RecordsCursor(records: records, deleted: [], errors: errors, moreComing: false, syncToken: "", continuation: nil)
+                completion(.success(cursor))
+            }
+        }
+        
+        sendCoded(body: body, to: "/records/lookup", in: database, completion: handler)
+    }
+    
     internal func recordsModify(body: Raw.Body, in database: CloudDatabase, completion: @escaping ((Result<RecordsCursor, Error>) -> Void)) {
         let handler: ((CloudCodedResult<Raw.Response>) -> Void) = {
             result in

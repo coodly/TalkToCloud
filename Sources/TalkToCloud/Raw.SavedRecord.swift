@@ -22,6 +22,10 @@ extension Raw {
         let recordType: String
         let recordChangeTag: String?
         let fields: [String: Raw.Field]
+
+        internal func replacing(fields: [String: Raw.Field]) -> SavedRecord {
+            SavedRecord(recordName: recordName, recordType: recordType, recordChangeTag: recordChangeTag, fields: fields)
+        }
     }
 }
 

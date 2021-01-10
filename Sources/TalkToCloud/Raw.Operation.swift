@@ -25,7 +25,11 @@ extension Raw {
         static var create: Operation {
             Operation(operationType: .create)
         }
-        
+
+        static var update: Operation {
+            Operation(operationType: .update)
+        }
+
         func zone(named: String) -> Operation {
             var modified = self
             
@@ -39,5 +43,17 @@ extension Raw {
             modified.record = record
             return modified
         }
+    }
+}
+
+extension Raw.Operation {
+    internal init(record: Raw.SavedRecord) {
+        if record.recordChangeTag != nil {
+            self.operationType = .update
+        } else {
+            self.operationType = .create
+        }
+            
+        self.record = record
     }
 }
