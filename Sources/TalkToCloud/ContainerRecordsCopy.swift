@@ -107,6 +107,7 @@ internal class ContainerRecordsCopy {
                     case .failure(let error):
                         Logging.error("Write changes error: \(error)")
                     case .success(_):
+                        self.sourceToken.mark(token: cursor.syncToken, in: zone)
                         self.processNextBatch(in: cursor)
                     }
                 }
