@@ -100,12 +100,31 @@ internal class ContainerRecordsCopy {
                 Logging.error("List changes error \(error)")
             case .success(let cursor):
                 Logging.log("Retrieved \(cursor.records.count) records and \(cursor.deleted.count) deletions")
-                self.write(records: cursor.records, into: zone)
+                self.write(records: cursor.records, into: zone) {
+                    result in
+                    
+                    switch result {
+                    case .failure(let error):
+                        Logging.error("Write changes error: \(error)")
+                    case .success(_):
+                        self.processNextBatch(in: cursor)
+                    }
+                }
             }
         }
     }
     
-    private func write(records: [Raw.Record], into zone: CloudZone) {
+    private func processNextBatch(in cursor: RecordsCursor) {
+        Logging.log("Process next batch")
+        guard cursor.moreComing else {
+            Logging.log("No more changes in source")
+            return
+        }
+        
+        cursor.continuation?()
+    }
+    
+    private func write(records: [Raw.Record], into zone: CloudZone, completion: @escaping ((Result<Bool, Error>) -> Void)) {
         Logging.log("Write \(records.count) records into \(zone.name)")
         let saved = records.map({ Raw.SavedRecord(record: $0, withChange: false) })
         let operations = saved.map({ Raw.Operation(record: $0) })
@@ -116,20 +135,23 @@ internal class ContainerRecordsCopy {
             switch result {
             case .failure(let error):
                 Logging.error("Save records error: \(error)")
+                completion(.failure(error))
             case .success(let cursor):
                 Logging.log("Records saved \(cursor.records.count)")
                 Logging.log("Record errors \(cursor.errors.count)")
-                self.resolve(errors: cursor.errors, on: records, in: zone)
+                self.resolve(errors: cursor.errors, on: records, in: zone, completion: completion)
             }
         }
     }
     
-    private func resolve(errors: [Raw.RecordError], on records: [Raw.Record], in zone: CloudZone) {
+    private func resolve(errors: [Raw.RecordError], on records: [Raw.Record], in zone: CloudZone, completion: @escaping ((Result<Bool, Error>) -> Void)) {
         let conflicts = errors.filter(\.isConflict)
-        Logging.log("Have \(conflicts.count) conflicts")
-        guard conflicts.count > 0 else {
+        if conflicts.count == 0 {
+            completion(.success(true))
             return
         }
+
+        Logging.log("Have \(conflicts.count) conflicts")
         
         let names = conflicts.map(\.recordName)
         target.codedLookup(of: names, zone: zone, in: .private) {
@@ -138,14 +160,15 @@ internal class ContainerRecordsCopy {
             switch result {
             case .failure(let error):
                 Logging.log("Lookup error \(error)")
+                completion(.failure(error))
             case .success(let cursor):
                 Logging.log("Lookup returned \(cursor.records.count) records")
-                self.modify(records: cursor.records, with: records, in: zone)
+                self.modify(records: cursor.records, with: records, in: zone, completion: completion)
             }
         }
     }
     
-    private func modify(records: [Raw.Record], with original: [Raw.Record], in zone: CloudZone) {
+    private func modify(records: [Raw.Record], with original: [Raw.Record], in zone: CloudZone, completion: @escaping ((Result<Bool, Error>) -> Void)) {
         var modified = [Raw.SavedRecord]()
         for record in records {
             guard let source = original.first(where: { $0.recordName == record.recordName }) else {
@@ -157,6 +180,7 @@ internal class ContainerRecordsCopy {
         }
         
         guard modified.count > 0 else {
+            completion(.success(true))
             return
         }
         
@@ -169,12 +193,15 @@ internal class ContainerRecordsCopy {
             switch result {
             case .failure(let error):
                 Logging.error("Modify error \(error)")
+                completion(.failure(error))
             case .success(let cursor):
                 Logging.log("Modified \(cursor.records.count) records")
                 if cursor.errors.count > 0 {
                     Logging.error("Had \(cursor.errors.count) errors")
                     cursor.errors.forEach({ Logging.error($0) })
                 }
+                
+                completion(.success(true))
             }
         }
     }
