@@ -17,27 +17,20 @@
 import Foundation
 
 extension Raw {
-    internal struct Operation: Codable {
-        let operationType: OperationType
-        var zone: Raw.Zone?
-        var record: Raw.SavedRecord?
+    internal struct Response: Codable {
+        private let records: [Raw.RecordOrError]
         
-        static var create: Operation {
-            Operation(operationType: .create)
+        internal var received: [Raw.Record] {
+            records.compactMap({ Raw.Record(from: $0) }).filter({ !$0.deleted })
+        }
+
+        internal var deleted: [Raw.Record] {
+            records.compactMap({ Raw.Record(from: $0) }).filter(\.deleted)
         }
         
-        func zone(named: String) -> Operation {
-            var modified = self
-            
-            modified.zone = Raw.Zone(zoneID: Raw.ZoneID(zoneName: named, ownerRecordName: nil, zoneType: nil), syncToken: nil)
-            
-            return modified
-        }
-        
-        internal func with(record: Raw.SavedRecord) -> Operation {
-            var modified = self
-            modified.record = record
-            return modified
+        internal var errors: [Raw.RecordError] {
+            records.compactMap({ Raw.RecordError(from: $0) })
         }
     }
 }
+

@@ -169,7 +169,7 @@ public class CloudContainer {
                 } else {
                     continuation = nil
                 }
-                let cursor = RecordsCursor(records: records, deleted: deleted, moreComing: zoneChanges.moreComing, syncToken: zoneChanges.syncToken, continuation: continuation)
+                let cursor = RecordsCursor(records: records, deleted: deleted, errors: [], moreComing: zoneChanges.moreComing, syncToken: zoneChanges.syncToken, continuation: continuation)
                 completion(.success(cursor))
             case .failure(let error):
                 completion(.failure(error))
@@ -310,7 +310,25 @@ public class CloudContainer {
     }
 }
 
-private extension CloudContainer {
+extension CloudContainer {
+    internal func recordsModify(body: Raw.Body, in database: CloudDatabase, completion: @escaping ((Result<RecordsCursor, Error>) -> Void)) {
+        let handler: ((CloudCodedResult<Raw.Response>) -> Void) = {
+            result in
+            
+            if let error = result.error {
+                completion(.failure(error))
+            } else if let response = result.result {
+                let records = response.received
+                let errors = response.errors
+                
+                let cursor = RecordsCursor(records: records, deleted: [], errors: errors, moreComing: false, syncToken: "", continuation: nil)
+                completion(.success(cursor))
+            }
+        }
+        
+        sendCoded(body: body, to: "/records/modify", in: database, completion: handler)
+    }
+    
     private func sendCoded<B: Encodable, R: Decodable>(body: B, to path: String, in database: CloudDatabase, completion: @escaping ((CloudCodedResult<R>) -> Void)) {
         let fullQueryPath = "/database/1/\(container)/\(env.rawValue)/\(database.rawValue)\(path)"
         let bodyData: Data
@@ -325,9 +343,13 @@ private extension CloudContainer {
         var components = URLComponents(url: CloudContainer.baseURL, resolvingAgainstBaseURL: true)!
         components.path = components.path.appending(fullQueryPath)
         
-        let url = components.url!
+        var url = components.url!
         
         Logging.log("POST to \(url)")
+        
+        for (name, value) in variables.auth.params {
+            url = url.appending(param: name, value: value)
+        }
         
         let request = NSMutableURLRequest(url: url)
         request.httpMethod = "POST"
@@ -336,10 +358,14 @@ private extension CloudContainer {
         for (name, value) in additionalHeaders {
             request.addValue(value, forHTTPHeaderField: name)
         }
-        
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+
         Logging.log("Attach body \(bodyData.count)")
         request.httpBody = bodyData
-        
+        if let string = String(data: bodyData, encoding: .utf8) {
+            Logging.verbose(string)
+        }
+
         Logging.log("Headers:")
         request.allHTTPHeaderFields?.forEach() {
             key, value in
@@ -365,6 +391,16 @@ private extension CloudContainer {
         guard let responseData = data else {
             Logging.log("No response data")
             cloudError = .noData
+            return
+        }
+        
+        if let string = String(data: responseData, encoding: .utf8) {
+            Logging.verbose(string)
+        }
+        
+        if let serverError = try? decoder.decode(ErrorResponse.self, from: responseData) {
+            Logging.log("Error response: \(serverError)")
+            cloudError = CloudError.server(code: serverError.serverErrorCode, reason: serverError.reason)
             return
         }
         

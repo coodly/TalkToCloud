@@ -87,7 +87,35 @@ extension Raw {
         }
         
         func encode(to encoder: Encoder) throws {
-            fatalError()
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            try container.encode(type.rawValue, forKey: .type)
+            
+            switch type {
+            case .double:
+                try container.encode(double, forKey: .value)
+            case .doubleList:
+                try container.encode(doubleList, forKey: .value)
+            case .int64:
+                try container.encode(int64, forKey: .value)
+            case .int64List:
+                try container.encode(int64List, forKey: .value)
+            case .string:
+                try container.encode(string, forKey: .value)
+            case .stringList:
+                try container.encode(stringList, forKey: .value)
+            case .timestamp:
+                try container.encode(timestamp, forKey: .value)
+            case .timestampList:
+                try container.encode(timestampList, forKey: .value)
+            case .reference:
+                try container.encode(reference, forKey: .value)
+            case .referenceList:
+                try container.encode(referenceList, forKey: .value)
+            case .assetId:
+                fatalError()
+            case .unknownList:
+                fatalError()
+            }
         }
     }
 }

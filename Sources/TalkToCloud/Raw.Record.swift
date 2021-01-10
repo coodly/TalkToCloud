@@ -27,3 +27,25 @@ extension Raw {
         let deleted: Bool
     }
 }
+
+extension Raw.Record {
+    internal init?(from received: Raw.RecordOrError) {
+        guard let recordType = received.recordType,
+              let recordChangeTag = received.recordChangeTag,
+              let fields = received.fields,
+              let created = received.created,
+              let modified = received.modified,
+              let deleted = received.deleted
+        else {
+            return nil
+        }
+        
+        self.recordName = received.recordName
+        self.recordType = recordType
+        self.recordChangeTag = recordChangeTag
+        self.fields = fields
+        self.created = created
+        self.modified = modified
+        self.deleted = deleted
+    }
+}

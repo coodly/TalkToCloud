@@ -19,6 +19,7 @@ import Foundation
 public struct RecordsCursor {
     internal let records: [Raw.Record]
     internal let deleted: [Raw.Record]
+    internal let errors: [Raw.RecordError]
     public let moreComing: Bool
     public let syncToken: String
     public let continuation: (() -> Void)?

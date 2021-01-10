@@ -79,14 +79,47 @@ internal class ContainerRecordsCopy {
                     return
                 }
                 
-                self.performCopy()
+                self.performCopy(of: zones.filter({ $0.name != CloudZone.defaultZone.name }))
             case .failure(let error):
                 Logging.error("List target zones error \(error)")
             }
         }
     }
     
-    private func performCopy() {
-        Logging.log("Perform records copy")
+    private func performCopy(of zones: [CloudZone]) {
+        Logging.log("Copy records in zones \(zones.map(\.name).sorted())")
+        guard zones.count == 1, let zone = zones.first else {
+            fatalError("Single zone copy at the moment")
+        }
+        
+        source.changes(in: zone, since: sourceToken.knownToken(in: zone)) {
+            result in
+            
+            switch result {
+            case .failure(let error):
+                Logging.error("List changes error \(error)")
+            case .success(let cursor):
+                Logging.log("Retrieved \(cursor.records.count) records and \(cursor.deleted.count) deletions")
+                self.write(records: cursor.records, into: zone)
+            }
+        }
+    }
+    
+    private func write(records: [Raw.Record], into zone: CloudZone) {
+        Logging.log("Write \(records.count) records into \(zone.name)")
+        let saved = records.map({ Raw.SavedRecord(record: $0, withChange: false) })
+        let operations = saved.map({ Raw.Operation.create.with(record: $0) })
+        let body = Raw.Body(zone: zone, operations: operations)
+        target.recordsModify(body: body, in: .private) {
+            result in
+            
+            switch result {
+            case .failure(let error):
+                Logging.error("Save records error: \(error)")
+            case .success(let cursor):
+                Logging.log("Records saved \(cursor.records.count)")
+                Logging.log("Record errors \(cursor.errors.count)")
+            }
+        }
     }
 }
