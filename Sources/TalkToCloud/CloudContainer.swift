@@ -422,6 +422,9 @@ extension CloudContainer {
             Logging.log("Error response: \(serverError)")
             cloudError = CloudError.server(code: serverError.serverErrorCode, reason: serverError.reason)
             return
+        } else if let retryError = try? self.decoder.decode(RetryAfterResponse.self, from: responseData) {
+            Logging.error("Error response \(retryError)")
+            cloudError = .retry(after: retryError.retryAfter)
         }
         
         do {

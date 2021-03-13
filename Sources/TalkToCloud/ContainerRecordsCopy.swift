@@ -20,10 +20,12 @@ internal class ContainerRecordsCopy {
     private let source: CloudContainer
     private let target: CloudContainer
     private let sourceToken: ZoneTokenStore
-    internal init(source: CloudContainer, target: CloudContainer, sourceToken: ZoneTokenStore) {
+    private let order: (([CloudZone]) -> [CloudZone])
+    internal init(source: CloudContainer, target: CloudContainer, sourceToken: ZoneTokenStore, copyOrder: @escaping (([CloudZone]) -> [CloudZone])) {
         self.source = source
         self.target = target
         self.sourceToken = sourceToken
+        self.order = copyOrder
     }
     
     internal func execute() {
@@ -88,9 +90,13 @@ internal class ContainerRecordsCopy {
     
     private func performCopy(of zones: [CloudZone]) {
         Logging.log("Copy records in zones \(zones.map(\.name).sorted())")
-        guard zones.count == 1, let zone = zones.first else {
-            fatalError("Single zone copy at the moment")
-        }
+        let ordered = order(zones)
+        Logging.log("Copy order \(ordered.map(\.name))")
+        ordered.forEach(performCopy(of:))
+    }
+    
+    private func performCopy(of zone: CloudZone) {
+        Logging.log("Perform copy of \(zone.name)")
         
         source.changes(in: zone, since: sourceToken.knownToken(in: zone)) {
             result in

@@ -17,9 +17,9 @@
 import Foundation
 
 extension CloudContainer {
-    public func copyChanges(to target: CloudContainer, sourceToken: ZoneTokenStore) {
+    public func copyChanges(to target: CloudContainer, sourceToken: ZoneTokenStore, copyOrder: @escaping (([CloudZone]) -> [CloudZone]) = { return $0 }) {
         Logging.log("Copy changes")
-        let copy = ContainerRecordsCopy(source: self, target: target, sourceToken: sourceToken)
+        let copy = ContainerRecordsCopy(source: self, target: target, sourceToken: sourceToken, copyOrder: copyOrder)
         copy.execute()
     }
 }
