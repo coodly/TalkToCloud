@@ -48,4 +48,17 @@ public class TokenAuthenticator: Authenticator {
         tokenStore.webToken = next
     }
 }
+
+#else
+
+public class TokenAuthenticator: Authenticator {
+    public var params: [String : String] {
+        fatalError()
+    }
+    
+    public func signedHeaders(for data: Data, query: String) -> [String : String] {
+        fatalError()
+    }
+}
+
 #endif
