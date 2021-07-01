@@ -14,10 +14,8 @@
 * limitations under the License.
 */
 
+#if os(macOS)
 import Foundation
-#if canImport(FoundationNetworking)
-import FoundationNetworking
-#endif
 
 public class TokenAuthenticator: Authenticator {
     private let apiToken: String
@@ -50,3 +48,4 @@ public class TokenAuthenticator: Authenticator {
         tokenStore.webToken = next
     }
 }
+#endif
