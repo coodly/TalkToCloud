@@ -14,9 +14,9 @@
 * limitations under the License.
 */
 
-#if os(macOS)
 import Foundation
 
+#if os(macOS)
 public class TokenAuthenticator: Authenticator {
     private let apiToken: String
     private let tokenStore: WebTokenStore
@@ -51,12 +51,18 @@ public class TokenAuthenticator: Authenticator {
 
 #else
 
+import FoundationNetworking
+
 public class TokenAuthenticator: Authenticator {
     public var params: [String : String] {
         fatalError()
     }
     
     public func signedHeaders(for data: Data, query: String) -> [String : String] {
+        fatalError()
+    }
+
+    internal func markToken(from response: URLResponse?) {
         fatalError()
     }
 }
