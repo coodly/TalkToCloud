@@ -449,10 +449,9 @@ private extension CloudContainer {
             
             var cloudError: CloudError? = nil
             var result: R? = nil
-            var continuation: (() -> Void)? = nil
             
             defer {
-                completion(CloudCodedResult(result: result, error: cloudError, continuation: continuation))
+                completion(CloudCodedResult(result: result, error: cloudError, continuation: nil))
             }
 
             if let error = error {

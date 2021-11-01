@@ -24,6 +24,10 @@ extension Raw {
         let fields: [String: Raw.Field]
         let created: Raw.Timestamp
         let modified: Raw.Timestamp
+
+        internal var containsAsset: Bool {
+            fields.values.filter({ $0.type == .assetId }).count > 0
+        }
     }
 }
 

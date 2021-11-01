@@ -46,4 +46,8 @@ public struct RecordsCursor {
         
         return loaded
     }
+    
+    internal var hasRecordsWithAssets: Bool {
+        records.map(\.containsAsset).filter({ $0 }).count > 0
+    }
 }
