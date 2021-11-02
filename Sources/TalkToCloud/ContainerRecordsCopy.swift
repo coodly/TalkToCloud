@@ -106,7 +106,8 @@ internal class ContainerRecordsCopy {
                 Logging.error("List changes error \(error)")
             case .success(let cursor):
                 Logging.log("Retrieved \(cursor.records.count) records and \(cursor.deleted.count) deletions")
-                self.write(records: cursor.records, deletions: cursor.deleted, into: zone) {
+                let records = self.copyAssets(in: cursor.records)
+                self.write(records: records, deletions: cursor.deleted, into: zone) {
                     result in
                     
                     switch result {
@@ -227,5 +228,25 @@ internal class ContainerRecordsCopy {
                 completion(.success(true))
             }
         }
+    }
+    
+    private func copyAssets(in records: [Raw.Record]) -> [Raw.Record] {
+        var processed = [Raw.Record]()
+        for record in records {
+            guard record.containsAsset else {
+                continue
+            }
+            
+            var assetFields = record.fields.filter({ $1.type == .assetId })
+            Logging.log("\(record.recordType): \(record.recordName) has \(assetFields.keys.sorted())")
+            for (key, field) in assetFields {
+                let downloadPath = field.assetDownload!.downloadURL.replacingOccurrences(of: "${f}", with: "image.jpg")
+                let data = try! Data(contentsOf: URL(string: downloadPath)!)
+                print(data)
+            }
+            fatalError()
+        }
+        
+        return processed
     }
 }
