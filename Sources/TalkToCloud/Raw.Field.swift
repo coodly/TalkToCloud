@@ -50,7 +50,7 @@ extension Raw {
         var timestampList: [Double]? = nil
         var reference: CloudReference? = nil
         var referenceList: [CloudReference]? = nil
-        var assetDownload: AssetDownloadTarget?
+        var assetDownload: AssetFileDefinition?
 
         init(from decoder: Decoder) throws {
             let values = try decoder.container(keyedBy: CodingKeys.self)
@@ -80,7 +80,7 @@ extension Raw {
             case .referenceList:
                 referenceList = try? values.decode([CloudReference].self, forKey: .value)
             case .assetId:
-                assetDownload = try? values.decode(AssetDownloadTarget.self, forKey: .value)
+                assetDownload = try? values.decode(AssetFileDefinition.self, forKey: .value)
             case .unknownList:
                 referenceList = []
             }
@@ -111,8 +111,9 @@ extension Raw {
                 try container.encode(reference, forKey: .value)
             case .referenceList:
                 try container.encode(referenceList, forKey: .value)
+            case .assetId where assetDownload?.receipt != nil:
+                try container.encode(assetDownload, forKey: .value)
             case .assetId:
-                //TODO jaanus: handle this
                 break
             case .unknownList:
                 try container.encode(referenceList, forKey: .value)

@@ -57,7 +57,7 @@ public class CloudContainer {
     private let container: String
     private let env: Environment
     private let auth: Authenticator
-    private let fetch: NetworkFetch
+    internal let fetch: NetworkFetch
     
     internal let variables: Variables
     
@@ -477,6 +477,11 @@ private extension CloudContainer {
 }
 
 extension CloudContainer {
+    internal func upload(asset: AssetUpload, in database: CloudDatabase = .public) -> AssetFileDefinition {
+        let upload = createAssetRecord(asset: asset, in: database)
+        return uploadAssetData(asset.data, with: upload!)!
+    }
+    
     public func upload<T: RemoteRecord & AssetAttached>(asset: AssetUpload, attachedTo record: T, in database: CloudDatabase = .public, completion: @escaping ((CloudResult<T>) -> ())) {
         Logging.log("Upload asset")
         

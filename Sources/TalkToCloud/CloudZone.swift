@@ -24,7 +24,7 @@ public struct CloudZone: Codable {
         zoneID.zoneName
     }
     
-    internal static let defaultZone = CloudZone(name: "_defaultZone")
+    public static let defaultZone = CloudZone(name: "_defaultZone")
 }
 
 extension CloudZone {

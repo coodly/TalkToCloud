@@ -28,6 +28,33 @@ extension Raw {
         internal var containsAsset: Bool {
             fields.values.filter({ $0.type == .assetId }).count > 0
         }
+
+        internal func updating(fields: [String: Raw.Field]) -> Raw.Record {
+            var updatedFields = self.fields
+            fields.forEach({ updatedFields[$0] = $1 })
+            
+            return Record(
+                recordName: recordName,
+                recordType: recordType,
+                recordChangeTag: recordChangeTag,
+                fields: updatedFields,
+                created: created,
+                modified: modified
+            )
+        }
+        
+        internal var withoutAssets: Record {
+            let updatedFields = fields.filter({ $1.type != .assetId })
+            
+            return Record(
+                recordName: recordName,
+                recordType: recordType,
+                recordChangeTag: recordChangeTag,
+                fields: updatedFields,
+                created: created,
+                modified: modified
+            )
+        }
     }
 }
 

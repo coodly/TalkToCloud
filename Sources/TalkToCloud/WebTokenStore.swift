@@ -16,6 +16,6 @@
 
 import Foundation
 
-public protocol WebTokenStore: class {
+public protocol WebTokenStore: AnyObject {
     var webToken: String? { get set }
 }

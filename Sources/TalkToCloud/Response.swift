@@ -123,7 +123,7 @@ public struct Record {
         return fields[member]?.referenceList
     }
 
-    public subscript(dynamicMember member: String) -> AssetDownloadTarget? {
+    public subscript(dynamicMember member: String) -> AssetFileDefinition? {
         return fields[member]?.assetDownload
     }
 }
@@ -171,7 +171,7 @@ internal struct FieldValue: Decodable {
     var timestampList: [Double]? = nil
     var reference: RemoteReference? = nil
     var referenceList: [RemoteReference]? = nil
-    var assetDownload: AssetDownloadTarget?
+    var assetDownload: AssetFileDefinition?
 
     init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
@@ -201,7 +201,7 @@ internal struct FieldValue: Decodable {
         case .referenceList:
             referenceList = try? values.decode([RemoteReference].self, forKey: .value)
         case .assetId:
-            assetDownload = try? values.decode(AssetDownloadTarget.self, forKey: .value)
+            assetDownload = try? values.decode(AssetFileDefinition.self, forKey: .value)
         case .unknownList:
             break
         }

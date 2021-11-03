@@ -17,8 +17,10 @@
 import Foundation
 
 internal struct AssetUploadCreate: Encodable {
+    internal let zoneID: Raw.ZoneID
     internal let tokens: [AssetUploadToken]
     internal init(asset: AssetUpload) {
+        zoneID = asset.zone.zoneID
         tokens = [AssetUploadToken(recordName: asset.recordName, recordType: asset.recordType, fieldName: asset.fieldName)]
     }
 }
@@ -39,16 +41,17 @@ internal struct AssetUploadTarget: Decodable {
     internal let url: URL
 }
 
-internal struct AssetUploadResponse: Decodable {
+internal struct AssetUploadResponse: Codable {
     internal let singleFile: AssetFileDefinition
 }
 
-public struct AssetFileDefinition: Decodable {
-    let wrappingKey: String?
+public struct AssetFileDefinition: Codable {
+    let wrappingKey: String
     let fileChecksum: String
-    let receipt: String
-    let referenceChecksum: String?
+    let receipt: String?
+    let referenceChecksum: String
     let size: Int
+    let downloadURL: String?
     
     internal func dictionary() -> [String: AnyObject] {
         var result = [String: AnyObject]()
@@ -62,10 +65,4 @@ public struct AssetFileDefinition: Decodable {
         }
         return result
     }
-}
-
-public struct AssetDownloadTarget: Decodable {
-    let fileChecksum: String
-    let size: Int
-    let downloadURL: String
 }

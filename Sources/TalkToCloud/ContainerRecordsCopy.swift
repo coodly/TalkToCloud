@@ -106,18 +106,67 @@ internal class ContainerRecordsCopy {
                 Logging.error("List changes error \(error)")
             case .success(let cursor):
                 Logging.log("Retrieved \(cursor.records.count) records and \(cursor.deleted.count) deletions")
-                let records = self.copyAssets(in: cursor.records)
-                self.write(records: records, deletions: cursor.deleted, into: zone) {
+                let recordsWithAssets = cursor.records.filter(\.containsAsset)
+                self.write(records: cursor.records.map(\.withoutAssets), deletions: cursor.deleted, into: zone) {
                     result in
                     
                     switch result {
                     case .failure(let error):
                         Logging.error("Write changes error: \(error)")
                     case .success(_):
-                        self.sourceToken.mark(token: cursor.syncToken, in: zone)
-                        self.processNextBatch(in: cursor)
+                        self.copyAssets(recordsWithAssets, to: zone) {
+                            self.sourceToken.mark(token: cursor.syncToken, in: zone)
+                            self.processNextBatch(in: cursor)
+                        }
                     }
                 }
+            }
+        }
+    }
+    
+    private func copyAssets(_ records: [Raw.Record], to zone: CloudZone, completion: @escaping (() -> Void)) {
+        Logging.log("Copy \(records.count) record assets")
+        guard records.count > 0 else {
+            completion()
+            return
+        }
+        
+        let names = records.map(\.recordName)
+        var existing: [Raw.Record] = []
+        target.codedLookup(of: names, zone: zone, in: .private) {
+            result in
+            
+            switch result {
+            case .success(let cursor):
+                existing = cursor.records
+            case .failure(let error):
+                Logging.error(error)
+                fatalError()
+            }
+        }
+        Logging.log("\(existing.count) records from target")
+        var saved = [Raw.Record]()
+        for record in records {
+            let inTarget = existing.first(where: { $0.recordName == record.recordName })!
+            if let modified = copyAssets(in: record, as: inTarget, in: zone) {
+                saved.append(modified)
+            }
+        }
+        
+        guard saved.count > 0 else {
+            completion()
+            return
+        }
+        
+        self.write(records: saved, deletions: [], into: zone) {
+            result in
+            
+            switch result {
+            case .success(_):
+                completion()
+            case .failure(let error):
+                Logging.error(error)
+                fatalError()
             }
         }
     }
@@ -230,23 +279,34 @@ internal class ContainerRecordsCopy {
         }
     }
     
-    private func copyAssets(in records: [Raw.Record]) -> [Raw.Record] {
-        var processed = [Raw.Record]()
-        for record in records {
-            guard record.containsAsset else {
+    private func copyAssets(in inSource: Raw.Record, as inTarget: Raw.Record, in zone: CloudZone) -> Raw.Record? {
+        var modifiedFields: [String: Raw.Field] = [:]
+        for (name, field) in inSource.fields.filter({$1.type == .assetId}) {
+            if let targetAsset = inTarget.fields[name]?.assetDownload, targetAsset.fileChecksum == field.assetDownload?.fileChecksum {
+                Logging.log("Have matching checksum - \(targetAsset.fileChecksum)")
                 continue
             }
             
-            var assetFields = record.fields.filter({ $1.type == .assetId })
-            Logging.log("\(record.recordType): \(record.recordName) has \(assetFields.keys.sorted())")
-            for (key, field) in assetFields {
-                let downloadPath = field.assetDownload!.downloadURL.replacingOccurrences(of: "${f}", with: "image.jpg")
-                let data = try! Data(contentsOf: URL(string: downloadPath)!)
-                print(data)
+            let downloadPath = field.assetDownload!.downloadURL!.replacingOccurrences(of: "${f}", with: "image.jpg")
+            var data: Data?
+            target.fetch.fetch(URLRequest(url: URL(string: downloadPath)!)) {
+                loaded, _, _ in
+                
+                data = loaded
             }
-            fatalError()
+            
+            let upload = AssetUpload(recordName: inTarget.recordName, recordType: inTarget.recordType, fieldName: name, data: data!, zone: zone)
+            let fileDefinition = target.upload(asset: upload, in: .private)
+            var modifiedField = field
+            modifiedField.assetDownload = fileDefinition
+            modifiedFields[name] = modifiedField                    
         }
         
-        return processed
+        guard modifiedFields.count > 0 else {
+            Logging.log("No modifications needed on \(inSource.recordType):\(inSource.recordName)")
+            return nil
+        }
+        
+        return inTarget.updating(fields: modifiedFields)
     }
 }
