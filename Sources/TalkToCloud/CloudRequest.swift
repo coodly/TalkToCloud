@@ -112,11 +112,6 @@ public enum Filter {
     }
 }
 
-public enum Sort {
-    case ascending(String)
-    case descending(String)
-}
-
 public protocol CloudRequest {
     func fetchFirst(filter: Filter?, sort: Sort?, in container: String, env: Environment, database: CloudDatabase)
 }

@@ -98,12 +98,7 @@ public class CloudContainer {
         }
         
         if let sort = sort {
-            switch sort {
-            case .ascending(let key):
-                query["sortBy"] = ["fieldName": key, "ascending": true] as AnyObject
-            case .descending(let key):
-                query["sortBy"] = ["fieldName": key, "ascending": false] as AnyObject
-            }
+            query["sortBy"] = ["fieldName": sort.fieldName, "ascending": sort.ascending] as AnyObject
         }
         
         var body: [String: AnyObject] = ["query": query as AnyObject]
