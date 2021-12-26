@@ -23,3 +23,11 @@ extension Raw {
         let zoneType: String?
     }
 }
+
+extension Raw.ZoneID {
+    internal init(name: String) {
+        zoneName = name
+        ownerRecordName = nil
+        zoneType = nil
+    }
+}
