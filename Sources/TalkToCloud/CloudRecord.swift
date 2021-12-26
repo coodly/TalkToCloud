@@ -16,10 +16,10 @@
 
 import Foundation
 
-public protocol CloudRecord: Codable {
+public protocol CloudRecord: Decodable {
     static var recordType: String { get }
     
-    var recordName: String? { get set }
-    var recordChangeTag: String? { get set }
+    var recordName: String { get set }
+    var recordChangeTag: String { get set }
     var deleted: Bool { get set }
 }
