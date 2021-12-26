@@ -27,7 +27,7 @@ public enum Environment: String {
     case production = "production"
 }
 
-public enum Filter {
+public enum EnumFilter {
     case equals(String, AnyObject)
     case notEquals(String, AnyObject)
     case `in`(String, [AnyObject])
@@ -35,7 +35,7 @@ public enum Filter {
     case lte(String, AnyObject)
     case gt(String, AnyObject)
     case gte(String, AnyObject)
-    case and([Filter])
+    case and([EnumFilter])
     
     func json() -> AnyObject? {
         var method: String?
@@ -113,5 +113,5 @@ public enum Filter {
 }
 
 public protocol CloudRequest {
-    func fetchFirst(filter: Filter?, sort: Sort?, in container: String, env: Environment, database: CloudDatabase)
+    func fetchFirst(filter: EnumFilter?, sort: Sort?, in container: String, env: Environment, database: CloudDatabase)
 }
