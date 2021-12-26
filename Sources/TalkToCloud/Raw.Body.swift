@@ -19,6 +19,60 @@ import Foundation
 extension Raw {
     internal struct Body: Codable {
         let zoneID: Raw.ZoneID
-        let operations: [Raw.Operation]
+        let operations: [Raw.Operation]?
+        let query: Query?
+        let resultsLimit: Int?
+        let desiredKeys: [String]?
+    }
+}
+
+extension Raw.Body {
+    internal init(zoneID: Raw.ZoneID, operations: [Raw.Operation]) {
+        self.zoneID = zoneID
+        self.operations = operations
+        query = nil
+        resultsLimit = nil
+        desiredKeys = nil
+    }
+}
+
+extension Raw.Body {
+    internal init(zoneID: Raw.ZoneID, query: Raw.Query) {
+        self.zoneID = zoneID
+        operations = nil
+        self.query = query
+        self.resultsLimit = nil
+        self.desiredKeys = nil
+    }
+}
+
+extension Raw.Body {
+    internal func with(resultsLimit: Int?) -> Raw.Body {
+        guard let resultsLimit = resultsLimit else {
+            return self
+        }
+
+        return Raw.Body(
+            zoneID: zoneID,
+            operations: operations,
+            query: query,
+            resultsLimit: resultsLimit,
+            desiredKeys: desiredKeys
+        )
+    }
+    
+    internal func with(desiredKeys: [String]?) -> Raw.Body {
+        guard let desiredKeys = desiredKeys else {
+            return self
+        }
+
+        return Raw.Body(
+            zoneID: zoneID,
+            operations: operations,
+            query: query,
+            resultsLimit: resultsLimit,
+            desiredKeys: desiredKeys
+        )
+
     }
 }
