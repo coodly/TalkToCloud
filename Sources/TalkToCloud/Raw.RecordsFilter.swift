@@ -48,6 +48,8 @@ extension Raw {
                     try container.encode(value, forKey: .value)
                 } else if let value = intList {
                     try container.encode(value, forKey: .value)
+                } else if let value = date {
+                    try container.encode(value.milliseconds(), forKey: .value)
                 } else {
                     fatalError()
                 }
@@ -59,6 +61,7 @@ extension Raw {
             let doubleList: [Double]?
             let int: Int?
             let intList: [Int]?
+            let date: Date?
             
             enum CodingKeys: String, CodingKey {
                 case value
@@ -79,5 +82,6 @@ extension Raw.RecordsFilter.Value {
         doubleList = any as? [Double]
         int = any as? Int
         intList = any as? [Int]
+        date = any as? Date
     }
 }
