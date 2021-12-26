@@ -21,7 +21,7 @@ public struct RecordsCursor {
     internal let deleted: [Raw.RecordID]
     internal let errors: [Raw.RecordError]
     public let moreComing: Bool
-    public let syncToken: String
+    public let syncToken: String?
     public let continuation: (() -> Void)?
 
     public func records<T: CloudRecord>(of type: T.Type) -> [T] {

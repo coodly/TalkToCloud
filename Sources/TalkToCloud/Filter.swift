@@ -35,6 +35,11 @@ public struct Filter: Codable {
             fatalError()
         }
     }
+    
+    func json() -> AnyObject? {
+        let data = try! JSONEncoder().encode(self)
+        return try? JSONSerialization.jsonObject(with: data, options: []) as AnyObject
+    }
 }
 
 extension Filter {

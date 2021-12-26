@@ -326,7 +326,7 @@ extension CloudContainer {
         sendCoded(body: body, to: "/records/lookup", in: database, completion: handler)
     }
     
-    internal func recordsModify(body: Raw.Body, in database: CloudDatabase, completion: @escaping ((Result<RecordsCursor, Error>) -> Void)) {
+    internal func recordsModify(body: Raw.Request, in database: CloudDatabase, completion: @escaping ((Result<RecordsCursor, Error>) -> Void)) {
         let handler: ((CloudCodedResult<Raw.Response>) -> Void) = {
             result in
             

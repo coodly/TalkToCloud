@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Coodly LLC
+ * Copyright 2021 Coodly LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,22 +16,16 @@
 
 import Foundation
 
-extension Raw {
-    internal struct Response: Codable {
-        private let records: [Raw.RecordOrError]
-        internal let continuationMarker: String?
+internal class QueryRecordsRequest: Request<Raw.Response> {
+    private let body: Raw.Request
+    private let database: CloudDatabase
+    internal init(body: Raw.Request, database: CloudDatabase, variables: Variables) {
+        self.body = body
+        self.database = database
         
-        internal var received: [Raw.Record] {
-            records.compactMap({ Raw.Record(from: $0) })
-        }
-
-        internal var deleted: [Raw.RecordID] {
-            records.filter(\.isDeleted).map({ Raw.RecordID(recordName: $0.recordName) })
-        }
-        
-        internal var errors: [Raw.RecordError] {
-            records.compactMap({ Raw.RecordError(from: $0) })
-        }
+        super.init(variables: variables)
+    }
+    override func performRequest() {
+        post(to: "/records/query", body: body, in: database)
     }
 }
-

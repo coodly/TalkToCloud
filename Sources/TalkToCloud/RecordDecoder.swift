@@ -71,7 +71,10 @@ internal class RecordDecoder: Decoder {
         }
         
         func decode(_ type: Bool.Type, forKey key: Key) throws -> Bool {
-            fatalError()
+            if key.stringValue == "deleted" {
+                return false
+            }
+            fatalError(key.stringValue)
         }
         
         func decode(_ type: String.Type, forKey key: Key) throws -> String {

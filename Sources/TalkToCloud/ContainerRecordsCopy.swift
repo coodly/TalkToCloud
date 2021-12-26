@@ -115,7 +115,7 @@ internal class ContainerRecordsCopy {
                         Logging.error("Write changes error: \(error)")
                     case .success(_):
                         self.copyAssets(recordsWithAssets, to: zone) {
-                            self.sourceToken.mark(token: cursor.syncToken, in: zone)
+                            self.sourceToken.mark(token: cursor.syncToken!, in: zone)
                             self.processNextBatch(in: cursor)
                         }
                     }
@@ -195,7 +195,7 @@ internal class ContainerRecordsCopy {
             
             operations.append(Raw.Operation(delete: delete))
         }
-        let body = Raw.Body(zoneID: zone.zoneID, operations: operations)
+        let body = Raw.Request(zoneID: zone.zoneID, operations: operations)
         target.recordsModify(body: body, in: .private) {
             result in
             
@@ -259,7 +259,7 @@ internal class ContainerRecordsCopy {
         
         Logging.log("Will save \(modified.count) refreshed records")
         let operations = modified.map({ Raw.Operation(record: $0) })
-        let body = Raw.Body(zoneID: zone.zoneID, operations: operations)
+        let body = Raw.Request(zoneID: zone.zoneID, operations: operations)
         target.recordsModify(body: body, in: .private) {
             result in
             

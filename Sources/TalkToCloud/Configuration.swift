@@ -31,6 +31,11 @@ public struct Configuration {
     }
 
     private func container(for env: Environment, using fetch: NetworkFetch) -> CloudContainer {
+        let auth = auth(for: env)
+        return CloudContainer(identifier: "iCloud.\(identifier)", env: env, authenticator: auth, fetch: fetch)
+    }
+    
+    internal func auth(for env: Environment) -> PrivateKeyAuthenticator {
         let keyID = key(for: env)
         let pem = URL(fileURLWithPath: FileManager.default.currentDirectoryPath).appendingPathComponent("Config", isDirectory: true).appendingPathComponent("\(identifier)-\(env.rawValue).pem")
         #if os(macOS)
@@ -38,8 +43,7 @@ public struct Configuration {
         #else
         let sign = OpenSSLSign(pathToPEM: pem)
         #endif
-        let auth = PrivateKeyAuthenticator(apiKeyID: keyID, sign: sign)
-        return CloudContainer(identifier: "iCloud.\(identifier)", env: env, authenticator: auth, fetch: fetch)
+        return PrivateKeyAuthenticator(apiKeyID: keyID, sign: sign)
     }
     
     private func key(for env: Environment) -> String {
