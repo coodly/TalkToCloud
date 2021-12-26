@@ -91,7 +91,7 @@ public class CloudContainer {
         send(body: body, to: "/records/modify", in: database, completion: completion)
     }
 
-    public func fetch<T>(limit: Int? = nil, desiredKeys: [String]? = nil, filter: EnumFilter? = nil, sort: Sort? = nil, in database: CloudDatabase = .public, completion: @escaping ((CloudResult<T>) -> ())) {
+    public func fetch<T>(limit: Int? = nil, desiredKeys: [String]? = nil, filter: Filter? = nil, sort: Sort? = nil, in database: CloudDatabase = .public, completion: @escaping ((CloudResult<T>) -> ())) {
         var query: [String: AnyObject] = ["recordType": T.recordType as AnyObject]
         if let f = filter, let params = f.json() {
             query["filterBy"] = params
@@ -112,7 +112,7 @@ public class CloudContainer {
         send(body: body, to: "/records/query", in: database, completion: completion)
     }
     
-    public func fetchFirst<T>(desiredKeys: [String]? = nil, filter: EnumFilter? = nil, sort: Sort? = nil, in database: CloudDatabase = .public, completion: @escaping ((CloudResult<T>) -> ())) {
+    public func fetchFirst<T>(desiredKeys: [String]? = nil, filter: Filter? = nil, sort: Sort? = nil, in database: CloudDatabase = .public, completion: @escaping ((CloudResult<T>) -> ())) {
         fetch(limit: 1, desiredKeys: desiredKeys, filter: filter, sort: sort, in: database, completion: completion)
     }
     
