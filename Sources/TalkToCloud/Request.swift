@@ -87,6 +87,11 @@ internal class Request<T: Decodable> {
             do {
                 let data = try encoder.encode(body)
                 request.httpBody = data
+         
+                let additionalHeaders = variables.auth.signedHeaders(for: data, query: url.path)
+                for (name, value) in additionalHeaders {
+                    request.addValue(value, forHTTPHeaderField: name)
+                }
                 
                 if let string = String(data: data, encoding: .utf8) {
                     Logging.verbose("Body:")
