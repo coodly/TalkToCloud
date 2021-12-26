@@ -16,7 +16,7 @@
 
 import Foundation
 
-public struct Sort {
+public struct Sort: Codable {
     let fieldName: String
     let ascending: Bool
 }
