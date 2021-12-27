@@ -145,8 +145,20 @@ internal class RecordDecoder: Decoder {
             if T.self == Date.self, key.stringValue == "modifiedAt" {
                 return record.modified.date as! T
             }
+            if key.stringValue == "recordName" {
+                return  record.recordName as! T
+            }
+            if key.stringValue == "recordChangeTag" {
+                return  record.recordChangeTag as! T
+            }
             if T.self == Date.self {
                 return try field(for: key).timestamp!.millisecondsToDate as! T
+            }
+            if T.self == String.self {
+                return try field(for: key).string as! T
+            }
+            if T.self == Int.self, let value = try field(for: key).int64 {
+                return Int(value) as! T
             }
             if T.self == CloudReference.self {
                 return try field(for: key).reference as! T
