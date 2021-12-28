@@ -24,7 +24,7 @@ public struct RecordsCursor {
     public let syncToken: String?
     public let continuation: (() -> Void)?
 
-    public func records<T: CloudRecord>(of type: T.Type) -> [T] {
+    public func records<T: CloudDecodable>(of type: T.Type) -> [T] {
         Logging.verbose("Decode records named \(T.recordType)")
         let named = records.filter({ $0.recordType == T.recordType })
         Logging.verbose("Have \(named.count) records")

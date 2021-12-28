@@ -16,7 +16,7 @@
 
 import Foundation
 
-public protocol CloudRecord: Decodable {
+public protocol CloudDecodable: Decodable {
     static var recordType: String { get }
     
     var recordName: String { get set }

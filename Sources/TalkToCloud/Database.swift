@@ -22,7 +22,7 @@ public struct Database {
         variables = Variables(container: identifier, env: env, auth: auth, fetch: fetch)
     }
     
-    public var defaultZone: Zone {
+    public var `default`: Zone {
         zone(name: "_defaultZone")
     }
     
