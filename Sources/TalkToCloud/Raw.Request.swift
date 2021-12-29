@@ -26,6 +26,7 @@ extension Raw {
         private var desiredKeys: [String]?
         private var atomic: Bool?
         private var continuationMarker: String?
+        private var records: [Raw.Lookup]?
 
         internal func query(in zones: [Raw.Zone]) -> Raw.Request {
             var modified = self
@@ -60,6 +61,11 @@ extension Raw.Request {
         query = nil
         resultsLimit = nil
         desiredKeys = nil
+    }
+    
+    internal init(zoneID: Raw.ZoneID, lookup: [Raw.Lookup]) {
+        self.zoneID = zoneID
+        self.records = lookup
     }
 }
 

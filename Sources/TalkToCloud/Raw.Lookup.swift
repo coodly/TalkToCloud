@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Coodly LLC
+ * Copyright 2021 Coodly LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,8 @@
  * limitations under the License.
  */
 
-import Foundation
-
-internal class LookupRequest: Request<Raw.Response> {
-    private let body: Raw.Request
-    private let database: CloudDatabase
-    internal init(body: Raw.Request, database: CloudDatabase, variables: Variables) {
-        self.body = body
-        
-        self.database = database
-        
-        super.init(variables: variables)
-    }
-    
-    override func performRequest() {
-        post(to: "/records/lookup", body: body, in: database)
+extension Raw {
+    internal struct Lookup: Encodable {
+        let recordName: String
     }
 }

@@ -222,6 +222,14 @@ public struct RecordError {
     public let serverErrorCode: String
 }
 
+extension RecordError {
+    internal init(raw: Raw.RecordError) {
+        recordName = raw.recordName
+        reason = raw.reason
+        serverErrorCode = raw.serverErrorCode
+    }
+}
+
 public struct DeletedRecord {
     public let recordName: String
 }

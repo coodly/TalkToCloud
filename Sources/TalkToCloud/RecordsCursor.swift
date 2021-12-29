@@ -47,6 +47,10 @@ public struct RecordsCursor {
         return loaded
     }
     
+    public var recordErrors: [RecordError] {
+        errors.map(RecordError.init(raw:))
+    }
+    
     internal var hasRecordsWithAssets: Bool {
         records.map(\.containsAsset).filter({ $0 }).count > 0
     }

@@ -62,6 +62,30 @@ public struct Zone {
         }
     }
     
+    public func lookup(names: [String], desiredKeys: [String]? = nil, completion: @escaping ((Result<RecordsCursor, Error>) -> Void)) {
+        let lookup = names.map({ Raw.Lookup(recordName: $0) })
+        let body = Raw.Request(zoneID: Raw.ZoneID(name: name), lookup: lookup).with(desiredKeys: desiredKeys)
+        let request = LookupRequest(body: body, database: database, variables: variables)
+        request.perform() {
+            result in
+            
+            switch result {
+            case .success(let response):
+                let cursor = RecordsCursor(
+                    records: response.received,
+                    deleted: response.deleted,
+                    errors: response.errors,
+                    moreComing: false,
+                    syncToken: nil,
+                    continuation: nil
+                )
+                completion(.success(cursor))
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
+    
     private func nextPage(with request: Raw.Request, continuation: String, completion: @escaping ((Result<RecordsCursor, Error>) -> Void)) {
         Logging.log("Next page")
         let withContinuation = request.with(continuationMarker: continuation)
