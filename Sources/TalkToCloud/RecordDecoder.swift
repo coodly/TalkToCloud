@@ -95,23 +95,23 @@ internal class RecordDecoder: Decoder {
         }
         
         func decode(_ type: Float.Type, forKey key: Key) throws -> Float {
-            fatalError()
+            fatalError(key.stringValue)
         }
         
         func decode(_ type: Int.Type, forKey key: Key) throws -> Int {
-            fatalError()
+            fatalError(key.stringValue)
         }
         
         func decode(_ type: Int8.Type, forKey key: Key) throws -> Int8 {
-            fatalError()
+            fatalError(key.stringValue)
         }
         
         func decode(_ type: Int16.Type, forKey key: Key) throws -> Int16 {
-            fatalError()
+            fatalError(key.stringValue)
         }
         
         func decode(_ type: Int32.Type, forKey key: Key) throws -> Int32 {
-            fatalError()
+            fatalError(key.stringValue)
         }
         
         func decode(_ type: Int64.Type, forKey key: Key) throws -> Int64 {
@@ -119,23 +119,23 @@ internal class RecordDecoder: Decoder {
         }
         
         func decode(_ type: UInt.Type, forKey key: Key) throws -> UInt {
-            fatalError()
+            fatalError(key.stringValue)
         }
         
         func decode(_ type: UInt8.Type, forKey key: Key) throws -> UInt8 {
-            fatalError()
+            fatalError(key.stringValue)
         }
         
         func decode(_ type: UInt16.Type, forKey key: Key) throws -> UInt16 {
-            fatalError()
+            fatalError(key.stringValue)
         }
         
         func decode(_ type: UInt32.Type, forKey key: Key) throws -> UInt32 {
-            fatalError()
+            fatalError(key.stringValue)
         }
         
         func decode(_ type: UInt64.Type, forKey key: Key) throws -> UInt64 {
-            fatalError()
+            fatalError(key.stringValue)
         }
         
         func decode<T>(_ type: T.Type, forKey key: Key) throws -> T where T : Decodable {
@@ -166,6 +166,9 @@ internal class RecordDecoder: Decoder {
             if T.self == [CloudReference].self {
                 return try field(for: key).referenceList as! T
             }
+            if T.self == [Int64].self {
+                return try field(for: key).int64List as! T
+            }
             
             fatalError(key.stringValue)
         }
@@ -175,7 +178,7 @@ internal class RecordDecoder: Decoder {
         }
         
         func nestedUnkeyedContainer(forKey key: Key) throws -> UnkeyedDecodingContainer {
-            fatalError()
+            fatalError(key.stringValue)
         }
         
         func superDecoder() throws -> Decoder {
@@ -183,7 +186,7 @@ internal class RecordDecoder: Decoder {
         }
         
         func superDecoder(forKey key: Key) throws -> Decoder {
-            fatalError()
+            fatalError(key.stringValue)
         }
         
         private func field(for key: Key) throws -> Raw.Field {
