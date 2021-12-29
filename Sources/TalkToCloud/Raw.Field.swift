@@ -125,3 +125,60 @@ extension Raw {
         }
     }
 }
+
+extension Raw.Field {
+    internal init(value: Encodable) {
+        if let value = value as? String {
+            self.type = .string
+            self.string = value
+        } else if let value = value as? [String] {
+            self.type = .stringList
+            self.stringList = value
+        } else if let value = value as? Double {
+            self.type = .double
+            self.double = value
+        } else if let value = value as? [Double] {
+            self.type = .doubleList
+            self.doubleList = value
+        } else if let value = value as? Int64 {
+            self.type = .int64
+            self.int64 = value
+        } else if let value = value as? [Int64] {
+            self.type = .int64List
+            self.int64List = value
+        } else if let value = value as? Date {
+            self.type = .timestamp
+            self.timestamp = value.milliseconds()
+        } else if let value = value as? [Date] {
+            self.type = .timestampList
+            self.timestampList = value.map({ $0.milliseconds() })
+        } else {
+            fatalError()
+        }
+    }
+}
+
+extension Raw.Field {
+    internal static func encodeFields(in record: CloudEncodable) -> [String: Raw.Field] {
+        var fields = [String: Raw.Field]()
+        let mirror = Mirror(reflecting: record)
+        let systemFields = ["recordType", "recordName", "recordChangeTag"]
+        for (label, value) in mirror.children {
+            guard case Optional<Any>.some(_) = value else {
+                continue
+            }
+            
+            guard let label = label, let value = value as? Encodable else {
+                continue
+            }
+            
+            if systemFields.contains(label) {
+                continue
+            }
+            
+            fields[label] = Raw.Field(value: value)
+        }
+        
+        return fields
+    }
+}

@@ -14,19 +14,10 @@
  * limitations under the License.
  */
 
-public struct Database {
-    private let variables: Variables
-    private let database: CloudDatabase
-    internal init(identifier: String, env: Environment, database: CloudDatabase, auth: Authenticator, fetch: NetworkFetch) {
-        self.database = database
-        variables = Variables(container: identifier, env: env, auth: auth, fetch: fetch)
-    }
-    
-    public var `default`: Zone {
-        zone(name: Zone.defaultZoneName)
-    }
-    
-    public func zone(name: String) -> Zone {
-        Zone(name: name, database: database, variables: variables)
-    }
+import Foundation
+
+public protocol CloudEncodable: Encodable {
+    var recordType: String { get }
+    var recordName: String { get }
+    var recordChangeTag: String? { get }
 }

@@ -24,6 +24,7 @@ extension Raw {
         private var query: Query?
         private var resultsLimit: Int?
         private var desiredKeys: [String]?
+        private var atomic: Bool?
         private var continuationMarker: String?
 
         internal func query(in zones: [Raw.Zone]) -> Raw.Request {
@@ -83,7 +84,8 @@ extension Raw.Request {
             operations: operations,
             query: query,
             resultsLimit: resultsLimit,
-            desiredKeys: desiredKeys
+            desiredKeys: desiredKeys,
+            atomic: atomic
         )
     }
     
@@ -97,7 +99,8 @@ extension Raw.Request {
             operations: operations,
             query: query,
             resultsLimit: resultsLimit,
-            desiredKeys: desiredKeys
+            desiredKeys: desiredKeys,
+            atomic: atomic
         )
 
     }
@@ -106,5 +109,24 @@ extension Raw.Request {
         var modified = self
         modified.continuationMarker = continuationMarker
         return modified
+    }
+    
+    internal func with(atomic: Bool?) -> Self {
+        guard let atomic = atomic else {
+            return self
+        }
+        
+        precondition(zoneID != nil && zoneID?.zoneName != Zone.defaultZoneName, "atomic operations not supported in default zone")
+        
+        return Raw.Request(
+            zoneID: zoneID,
+            zones: zones,
+            operations: operations,
+            query: query,
+            resultsLimit: resultsLimit,
+            desiredKeys: desiredKeys,
+            atomic: atomic,
+            continuationMarker: continuationMarker
+        )
     }
 }

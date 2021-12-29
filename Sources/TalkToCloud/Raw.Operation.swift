@@ -17,7 +17,7 @@
 import Foundation
 
 extension Raw {
-    internal struct Operation: Codable {
+    internal struct Operation: Encodable {
         let operationType: OperationType
         var zone: Raw.Zone?
         var record: Raw.SavedRecord?
@@ -60,5 +60,17 @@ extension Raw.Operation {
     internal init(delete: Raw.RecordID) {
         operationType = .forceDelete
         record = Raw.SavedRecord(delete: delete)
+    }
+}
+
+extension Raw.Operation {
+    internal init(record: CloudEncodable) {
+        if record.recordChangeTag == nil {
+            self.operationType = .create
+        } else {
+            self.operationType = .update
+        }
+        
+        self.record = Raw.SavedRecord(encoded: record)
     }
 }

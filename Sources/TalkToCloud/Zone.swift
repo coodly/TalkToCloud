@@ -16,6 +16,10 @@
 
 import Foundation
 
+extension Zone {
+    internal static let defaultZoneName = "_defaultZone"
+}
+
 public struct Zone {
     private let name: String
     private let database: CloudDatabase
@@ -39,6 +43,23 @@ public struct Zone {
             .with(desiredKeys: desiredKeys)
         
         performRequest(with: body, completion: completion)
+    }
+    
+    public func modify(records: [CloudEncodable], desiredKeys: [String]? = nil, atomic: Bool? = nil, completion: @escaping ((Result<RecordsCursor, Error>) -> Void)) {
+        let operations = records.map(Raw.Operation.init(record:))
+        let request = Raw.Request(zoneID: Raw.ZoneID(name: name), operations: operations).with(desiredKeys: desiredKeys).with(atomic: atomic)
+        let save = ModifyRecordsRequest(body: request, database: database, variables: variables)
+        save.perform() {
+            result in
+            
+            switch result {
+            case .success(let response):
+                let cursor = RecordsCursor(records: response.received, deleted: response.deleted, errors: response.errors, moreComing: false, syncToken: nil, continuation: nil)
+                completion(.success(cursor))
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
     }
     
     private func nextPage(with request: Raw.Request, continuation: String, completion: @escaping ((Result<RecordsCursor, Error>) -> Void)) {

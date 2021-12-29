@@ -17,7 +17,7 @@
 import Foundation
 
 extension Raw {
-    internal struct SavedRecord: Codable {
+    internal struct SavedRecord: Encodable {
         let recordName: String
         let recordType: String
         let recordChangeTag: String?
@@ -42,5 +42,12 @@ extension Raw.SavedRecord {
         recordType = "Forced - does not matter"
         recordChangeTag = "Forced - does not matter"
         fields = [:]
+    }
+    
+    internal init(encoded: CloudEncodable) {
+        recordName = encoded.recordName
+        recordType = encoded.recordType
+        recordChangeTag = encoded.recordChangeTag
+        fields = Raw.Field.encodeFields(in: encoded)
     }
 }

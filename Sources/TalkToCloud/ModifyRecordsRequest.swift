@@ -14,19 +14,18 @@
  * limitations under the License.
  */
 
-public struct Database {
-    private let variables: Variables
+internal class ModifyRecordsRequest: Request<Raw.Response> {
+    private let body: Raw.Request
     private let database: CloudDatabase
-    internal init(identifier: String, env: Environment, database: CloudDatabase, auth: Authenticator, fetch: NetworkFetch) {
+    internal init(body: Raw.Request, database: CloudDatabase, variables: Variables) {
+        self.body = body
+        
         self.database = database
-        variables = Variables(container: identifier, env: env, auth: auth, fetch: fetch)
+        
+        super.init(variables: variables)
     }
     
-    public var `default`: Zone {
-        zone(name: Zone.defaultZoneName)
-    }
-    
-    public func zone(name: String) -> Zone {
-        Zone(name: name, database: database, variables: variables)
+    override func performRequest() {
+        post(to: "/records/modify", body: body, in: database)
     }
 }
