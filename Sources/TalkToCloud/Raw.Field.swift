@@ -82,6 +82,10 @@ extension Raw {
             case .assetId:
                 assetDownload = try? values.decode(AssetFileDefinition.self, forKey: .value)
             case .unknownList:
+                stringList = []
+                doubleList = []
+                int64List = []
+                timestampList = []
                 referenceList = []
             }
         }
