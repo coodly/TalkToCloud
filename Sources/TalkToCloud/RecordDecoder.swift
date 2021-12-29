@@ -67,7 +67,7 @@ internal class RecordDecoder: Decoder {
                 return false
             }
             
-            return true
+            return !record.fields.keys.contains(key.stringValue)
         }
         
         func decode(_ type: Bool.Type, forKey key: Key) throws -> Bool {
