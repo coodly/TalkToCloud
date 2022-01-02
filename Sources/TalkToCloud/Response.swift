@@ -223,6 +223,12 @@ public struct RecordError {
 }
 
 extension RecordError {
+    public var isNotFound: Bool {
+        serverErrorCode == "NOT_FOUND"
+    }
+}
+
+extension RecordError {
     internal init(raw: Raw.RecordError) {
         recordName = raw.recordName
         reason = raw.reason

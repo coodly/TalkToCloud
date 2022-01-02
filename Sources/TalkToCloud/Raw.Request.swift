@@ -85,14 +85,9 @@ extension Raw.Request {
             return self
         }
 
-        return Raw.Request(
-            zoneID: zoneID,
-            operations: operations,
-            query: query,
-            resultsLimit: resultsLimit,
-            desiredKeys: desiredKeys,
-            atomic: atomic
-        )
+        var modified = self
+        modified.resultsLimit = resultsLimit
+        return modified
     }
     
     internal func with(desiredKeys: [String]?) -> Raw.Request {
@@ -100,15 +95,9 @@ extension Raw.Request {
             return self
         }
 
-        return Raw.Request(
-            zoneID: zoneID,
-            operations: operations,
-            query: query,
-            resultsLimit: resultsLimit,
-            desiredKeys: desiredKeys,
-            atomic: atomic
-        )
-
+        var modified = self
+        modified.desiredKeys = desiredKeys
+        return modified
     }
     
     internal func with(continuationMarker: String) -> Self {
@@ -124,15 +113,8 @@ extension Raw.Request {
         
         precondition(zoneID != nil && zoneID?.zoneName != Zone.defaultZoneName, "atomic operations not supported in default zone")
         
-        return Raw.Request(
-            zoneID: zoneID,
-            zones: zones,
-            operations: operations,
-            query: query,
-            resultsLimit: resultsLimit,
-            desiredKeys: desiredKeys,
-            atomic: atomic,
-            continuationMarker: continuationMarker
-        )
+        var modified = self
+        modified.atomic = atomic
+        return modified
     }
 }
