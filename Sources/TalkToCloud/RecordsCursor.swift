@@ -51,6 +51,10 @@ public struct RecordsCursor {
         errors.map(RecordError.init(raw:))
     }
     
+    public var deletions: [DeletedRecord] {
+        deleted.map(\.recordName).map(DeletedRecord.init(recordName:))
+    }
+    
     internal var hasRecordsWithAssets: Bool {
         records.map(\.containsAsset).filter({ $0 }).count > 0
     }

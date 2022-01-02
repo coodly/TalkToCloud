@@ -62,6 +62,27 @@ public struct Zone {
         }
     }
     
+    public func delete(records: [CloudEncodable], atomic: Bool? = nil, completion: @escaping ((Result<RecordsCursor, Error>) -> Void)) {
+        delete(names: records.map(\.recordName), atomic: atomic, completion: completion)
+    }
+
+    public func delete(names: [String], atomic: Bool? = nil, completion: @escaping ((Result<RecordsCursor, Error>) -> Void)) {
+        let operations = names.map(Raw.Operation.init(deleteName:))
+        let request = Raw.Request(zoneID: Raw.ZoneID(name: name), operations: operations).with(atomic: atomic)
+        let save = ModifyRecordsRequest(body: request, database: database, variables: variables)
+        save.perform() {
+            result in
+            
+            switch result {
+            case .success(let response):
+                let cursor = RecordsCursor(records: response.received, deleted: response.deleted, errors: response.errors, moreComing: false, syncToken: nil, continuation: nil)
+                completion(.success(cursor))
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
+
     public func lookup(names: [String], desiredKeys: [String]? = nil, completion: @escaping ((Result<RecordsCursor, Error>) -> Void)) {
         let lookup = names.map({ Raw.Lookup(recordName: $0) })
         let body = Raw.Request(zoneID: Raw.ZoneID(name: name), lookup: lookup).with(desiredKeys: desiredKeys)

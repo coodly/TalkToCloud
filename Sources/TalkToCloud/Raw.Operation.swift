@@ -61,6 +61,10 @@ extension Raw.Operation {
         operationType = .forceDelete
         record = Raw.SavedRecord(delete: delete)
     }
+    
+    internal init(deleteName: String) {
+        self.init(delete: Raw.RecordID(recordName: deleteName))
+    }
 }
 
 extension Raw.Operation {

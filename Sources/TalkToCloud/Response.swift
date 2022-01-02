@@ -232,6 +232,10 @@ extension RecordError {
 
 public struct DeletedRecord {
     public let recordName: String
+
+    public init(recordName: String) {
+        self.recordName = recordName
+    }
 }
 
 internal struct ErrorResponse: Decodable {
