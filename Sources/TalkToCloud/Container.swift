@@ -15,13 +15,17 @@
  */
 
 public struct Container {
-    public let `public`: Database
-    public let `private`: Database
-    public let shared: Database
+    public var `public`: Database {
+        createPublic()
+    }
+    public var `private`: Database {
+        createPrivate()
+    }
+    private let createPublic: (() -> Database)
+    private let createPrivate: (() -> Database)
     
     internal init(identifier: String, env: Environment, auth: Authenticator, fetch: NetworkFetch) {
-        self.public = Database(identifier: identifier, env: env, database: .public, auth: auth, fetch: fetch)
-        self.private = Database(identifier: identifier, env: env, database: .private, auth: auth, fetch: fetch)
-        self.shared = Database(identifier: identifier, env: env, database: .shared, auth: auth, fetch: fetch)
+        createPublic = { Database(identifier: identifier, env: env, database: .public, auth: auth, fetch: fetch) }
+        createPrivate = { Database(identifier: identifier, env: env, database: .private, auth: auth, fetch: fetch) }
     }
 }
