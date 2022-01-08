@@ -16,7 +16,7 @@
 
 import Foundation
 
-public class OpenSSLSign: SignData {
+public class OpenSSLSign {
     private lazy var identifier = UUID().uuidString
     private lazy var signed = URL(fileURLWithPath: FileManager.default.currentDirectoryPath).appendingPathComponent("\(self.identifier)-sign")
     private lazy var writeTo = URL(fileURLWithPath: FileManager.default.currentDirectoryPath).appendingPathComponent("\(self.identifier)-signed")

@@ -39,9 +39,9 @@ public struct Configuration {
         let keyID = key(for: env)
         let pem = URL(fileURLWithPath: FileManager.default.currentDirectoryPath).appendingPathComponent("Config", isDirectory: true).appendingPathComponent("\(identifier)-\(env.rawValue).pem")
         #if os(macOS)
-        let sign = SystemSign(pathToPEM: pem)
+        let sign = SignData.system(pathToPEM: pem)
         #else
-        let sign = OpenSSLSign(pathToPEM: pem)
+        let sign = SignData.openSSL(pathToPEM: pem)
         #endif
         return PrivateKeyAuthenticator(apiKeyID: keyID, sign: sign)
     }

@@ -18,7 +18,7 @@
 import Foundation
 import CommonCrypto
 
-public class SystemSign: SignData {
+public class SystemSign {
     private lazy var privateKey: SecKey = {
         var importedItems: CFArray?
 

@@ -16,6 +16,32 @@
 
 import Foundation
 
-public protocol SignData {
-    func sign(_ data: Data) -> String
+public struct SignData {
+    private let onSign: ((Data) -> String)
+
+    public init(onSign: @escaping ((Data) -> String)) {
+        self.onSign = onSign
+    }
+
+    public func sign(_ data: Data) -> String {
+        onSign(data)
+    }
 }
+
+extension SignData {
+    public static func system(pathToPEM: URL) -> SignData {
+        let sign = SystemSign(pathToPEM: pathToPEM)
+        return SignData(
+            onSign: { sign.sign($0) }
+        )
+    }
+    
+    public static func openSSL(pathToPEM: URL) -> SignData {
+        let openSSL = OpenSSLSign(pathToPEM: pathToPEM)
+        return SignData(
+            onSign: { openSSL.sign($0) }
+        )
+    }
+}
+
+
