@@ -16,6 +16,20 @@
 
 import Foundation
 
-public protocol WebTokenStore: AnyObject {
-    var webToken: String? { get set }
+public struct WebTokenStore {
+    private let onGet: (() -> String?)
+    private let onSet: ((String?) -> Void)
+    public init(onGet: @escaping (() -> String?), onSet: @escaping ((String?) -> Void)) {
+        self.onGet = onGet
+        self.onSet = onSet
+    }
+
+    public var webToken: String? {
+        get {
+            onGet()
+        }
+        set {
+            onSet(newValue)
+        }
+    }
 }

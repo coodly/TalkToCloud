@@ -19,7 +19,7 @@ import Foundation
 #if os(macOS)
 public class TokenAuthenticator: Authenticator {
     private let apiToken: String
-    private let tokenStore: WebTokenStore
+    private var tokenStore: WebTokenStore
     
     public var params: [String : String] {
         var result = [String: String]()
