@@ -44,9 +44,9 @@ extension Raw {
                     try container.encode(value, forKey: .value)
                 } else if let value = doubleList {
                     try container.encode(value, forKey: .value)
-                } else if let value = int {
+                } else if let value = int64 {
                     try container.encode(value, forKey: .value)
-                } else if let value = intList {
+                } else if let value = int64List {
                     try container.encode(value, forKey: .value)
                 } else if let value = date {
                     try container.encode(value.milliseconds(), forKey: .value)
@@ -59,8 +59,8 @@ extension Raw {
             let stringList: [String]?
             let double: Double?
             let doubleList: [Double]?
-            let int: Int?
-            let intList: [Int]?
+            let int64: Int64?
+            let int64List: [Int64]?
             let date: Date?
             
             enum CodingKeys: String, CodingKey {
@@ -80,8 +80,8 @@ extension Raw.RecordsFilter.Value {
         stringList = any as? [String]
         double = any as? Double
         doubleList = any as? [Double]
-        int = any as? Int
-        intList = any as? [Int]
+        int64 = any as? Int64
+        int64List = any as? [Int64]
         date = any as? Date
     }
 }
