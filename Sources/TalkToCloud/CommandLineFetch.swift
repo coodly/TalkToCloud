@@ -19,12 +19,14 @@ import Foundation
 import FoundationNetworking
 #endif
 
-public class CommandLineFetch: NetworkFetch {
-    public init() {}
-    
-    public func fetch(_ request: URLRequest, completion: (Data?, URLResponse?, Error?) -> ()) {
-        Logging.verbose("\(request.httpMethod ?? "-") to \(request.url?.absoluteString ?? "-")")
-        let curl = CURLRequest(request: request)
-        curl.execute(completion: completion)
-    }
+extension NetworkFetch {
+    public static let commandLineFetch = NetworkFetch(
+        onFetch: {
+            request, completion in
+            
+            Logging.verbose("\(request.httpMethod ?? "-") to \(request.url?.absoluteString ?? "-")")
+            let curl = CURLRequest(request: request)
+            curl.execute(completion: completion)
+        }
+    )
 }

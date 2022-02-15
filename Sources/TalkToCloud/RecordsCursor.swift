@@ -40,6 +40,7 @@ public struct RecordsCursor {
                 loaded.append(decoded)
             } catch {
                 Logging.error(error)
+                Logging.log(record.recordName)
                 fatalError()
             }
         }

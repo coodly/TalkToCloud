@@ -33,9 +33,9 @@ public class Commander<C: Command> {
         let command = C()
         
         #if os(Linux)
-        let fetch = CommandLineFetch()
+        let fetch: NetworkFetch = .commandLineFetch
         #else
-        let fetch = SynchronousSystemFetch()
+        let fetch: NetworkFetch = .synchronousSystemFetch
         #endif
         
         let config = Configuration(containerId: containerId)
