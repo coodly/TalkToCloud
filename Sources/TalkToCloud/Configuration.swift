@@ -47,6 +47,7 @@ public struct Configuration {
     }
     
     private func key(for env: Environment) -> String {
+        print(URL(fileURLWithPath: "Config/\(identifier)-\(env.rawValue).key"))
         let devData = try! Data(contentsOf: URL(fileURLWithPath: "Config/\(identifier)-\(env.rawValue).key"))
         return String(data: devData, encoding: .utf8)!.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
     }
