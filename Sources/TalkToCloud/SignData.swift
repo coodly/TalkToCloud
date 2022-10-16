@@ -29,12 +29,14 @@ public struct SignData {
 }
 
 extension SignData {
+    #if os(macOS)
     public static func system(pathToPEM: URL) -> SignData {
         let sign = SystemSign(pathToPEM: pathToPEM)
         return SignData(
             onSign: { sign.sign($0) }
         )
     }
+    #endif
     
     public static func openSSL(pathToPEM: URL) -> SignData {
         let openSSL = OpenSSLSign(pathToPEM: pathToPEM)
