@@ -22,21 +22,28 @@ public struct Configuration {
         identifier = containerId
     }
     
-    public func productionContainer(with fetch: NetworkFetch) -> CloudContainer {
+    public func productionContainer(with fetch: NetworkFetch) -> CloudContainer? {
         return container(for: .production, using: fetch)
     }
 
-    public func developmentContainer(with fetch: NetworkFetch) -> CloudContainer {
+    public func developmentContainer(with fetch: NetworkFetch) -> CloudContainer? {
         return container(for: .development, using: fetch)
     }
 
-    private func container(for env: Environment, using fetch: NetworkFetch) -> CloudContainer {
-        let auth = auth(for: env)
+    private func container(for env: Environment, using fetch: NetworkFetch) -> CloudContainer? {
+        guard let auth = auth(for: env) else {
+            Logging.error("No auth")
+            return nil
+        }
+        
         return CloudContainer(identifier: "iCloud.\(identifier)", env: env, authenticator: auth, fetch: fetch)
     }
     
-    internal func auth(for env: Environment) -> PrivateKeyAuthenticator {
-        let keyID = key(for: env)
+    internal func auth(for env: Environment) -> PrivateKeyAuthenticator? {
+        guard let keyID = key(for: env) else {
+            Logging.error("No key")
+            return nil
+        }
         let pem = URL(fileURLWithPath: FileManager.default.currentDirectoryPath).appendingPathComponent("Config", isDirectory: true).appendingPathComponent("\(identifier)-\(env.rawValue).pem")
         #if os(macOS)
         let sign = SignData.system(pathToPEM: pem)
@@ -46,9 +53,15 @@ public struct Configuration {
         return PrivateKeyAuthenticator(apiKeyID: keyID, sign: sign)
     }
     
-    private func key(for env: Environment) -> String {
-        print(URL(fileURLWithPath: "Config/\(identifier)-\(env.rawValue).key"))
-        let devData = try! Data(contentsOf: URL(fileURLWithPath: "Config/\(identifier)-\(env.rawValue).key"))
-        return String(data: devData, encoding: .utf8)!.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+    private func key(for env: Environment) -> String? {
+        let fileURL = URL(fileURLWithPath: "Config/\(identifier)-\(env.rawValue).key")
+        Logging.log(fileURL)
+        do {
+            let devData = try Data(contentsOf: URL(fileURLWithPath: "Config/\(identifier)-\(env.rawValue).key"))
+            return String(data: devData, encoding: .utf8)!.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+        } catch {
+            Logging.error(error)
+            return nil
+        }
     }
 }

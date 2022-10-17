@@ -18,18 +18,24 @@ public struct CloudKit {
     public let development: Container
     public let production: Container
     
-    public init(identifier: String, fetch: NetworkFetch) {
+    public init?(identifier: String, fetch: NetworkFetch) {
         let config = Configuration(containerId: identifier.replacingOccurrences(of: "iCloud.", with: ""))
+        
+        guard let dev = config.auth(for: .development), let prod = config.auth(for: .production) else {
+            Logging.error("No auth")
+            return nil
+        }
+        
         development = Container(
             identifier: identifier,
             env: .development,
-            auth: config.auth(for: .development),
+            auth: dev,
             fetch: fetch
         )
         production = Container(
             identifier: identifier,
             env: .production,
-            auth: config.auth(for: .production),
+            auth: prod,
             fetch: fetch
         )
     }
