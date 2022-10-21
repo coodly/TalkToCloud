@@ -51,6 +51,7 @@ extension Raw {
                 } else if let value = date {
                     try container.encode(value.milliseconds(), forKey: .value)
                 } else {
+                    dump(self)
                     fatalError()
                 }
             }
@@ -80,8 +81,17 @@ extension Raw.RecordsFilter.Value {
         stringList = any as? [String]
         double = any as? Double
         doubleList = any as? [Double]
-        int64 = any as? Int64
-        int64List = any as? [Int64]
         date = any as? Date
+
+        if let int = any as? Int {
+            int64 = Int64(int)
+        } else {
+            int64 = any as? Int64
+        }
+        if let ints = any as? [Int] {
+            int64List = ints.map({ Int64($0) })
+        } else {
+            int64List = any as? [Int64]
+        }
     }
 }
