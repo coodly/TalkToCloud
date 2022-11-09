@@ -23,11 +23,19 @@ internal class ContainerRecordsCopy {
     private let source: CloudContainer
     private let target: CloudContainer
     private let sourceToken: ZoneTokenStore
+    private let chunked: Bool
     private let order: (([CloudZone]) -> [CloudZone])
-    internal init(source: CloudContainer, target: CloudContainer, sourceToken: ZoneTokenStore, copyOrder: @escaping (([CloudZone]) -> [CloudZone])) {
+    internal init(
+        source: CloudContainer,
+        target: CloudContainer,
+        sourceToken: ZoneTokenStore,
+        chunked: Bool,
+        copyOrder: @escaping (([CloudZone]) -> [CloudZone])
+    ) {
         self.source = source
         self.target = target
         self.sourceToken = sourceToken
+        self.chunked = chunked
         self.order = copyOrder
     }
     
@@ -109,20 +117,30 @@ internal class ContainerRecordsCopy {
                 Logging.error("List changes error \(error)")
             case .success(let cursor):
                 Logging.log("Retrieved \(cursor.records.count) records and \(cursor.deleted.count) deletions")
-                let recordsWithAssets = cursor.records.filter(\.containsAsset)
-                self.write(records: cursor.records.map(\.withoutAssets), deletions: cursor.deleted, into: zone) {
-                    result in
-                    
-                    switch result {
-                    case .failure(let error):
-                        Logging.error("Write changes error: \(error)")
-                    case .success(_):
-                        self.copyAssets(recordsWithAssets, to: zone) {
-                            self.sourceToken.mark(token: cursor.syncToken!, in: zone)
-                            self.processNextBatch(in: cursor)
+                let chunked = self.maybeChunked(cursor.records)
+                var deleted = cursor.deleted
+                
+                for chunk in chunked {
+                    let recordsWithAssets = chunk.filter(\.containsAsset)
+                    self.write(records: chunk.map(\.withoutAssets), deletions: deleted, into: zone) {
+                        result in
+                        
+                        switch result {
+                        case .failure(let error):
+                            Logging.error("Write changes error: \(error)")
+                        case .success(_):
+                            self.copyAssets(recordsWithAssets, to: zone) {}
                         }
                     }
+                    deleted.removeAll()
+                    
+                    if self.chunked {
+                        Thread.sleep(forTimeInterval: 0.5)
+                    }
                 }
+
+                self.sourceToken.mark(token: cursor.syncToken!, in: zone)
+                self.processNextBatch(in: cursor)
             }
         }
     }
@@ -311,5 +329,29 @@ internal class ContainerRecordsCopy {
         }
         
         return inTarget.updating(fields: modifiedFields)
+    }
+    
+    private func maybeChunked(_ records: [Raw.Record]) -> [[Raw.Record]] {
+        guard chunked else {
+            return [records]
+        }
+        
+        return records.chunked
+    }
+}
+
+extension Array where Element == Raw.Record {
+    fileprivate var chunked: [[Raw.Record]] {
+        var result = [String: [Raw.Record]]()
+        
+        for record in self {
+            if #available(macOS 12.0, *) {
+                result[record.modified.date.ISO8601Format(), default: []].append(record)
+            } else {
+                fatalError()
+            }
+        }
+        
+        return result.keys.sorted().compactMap({ result[$0] })
     }
 }
