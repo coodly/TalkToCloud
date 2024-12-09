@@ -17,52 +17,52 @@
 import Foundation
 
 internal struct AssetUploadCreate: Encodable {
-    internal let zoneID: Raw.ZoneID
-    internal let tokens: [AssetUploadToken]
-    internal init(asset: AssetUpload) {
-        zoneID = asset.zone.zoneID
-        tokens = [AssetUploadToken(recordName: asset.recordName, recordType: asset.recordType, fieldName: asset.fieldName)]
-    }
+  internal let zoneID: Raw.ZoneID
+  internal let tokens: [AssetUploadToken]
+  internal init(asset: AssetUpload) {
+    zoneID = asset.zone.zoneID
+    tokens = [AssetUploadToken(recordName: asset.recordName, recordType: asset.recordType, fieldName: asset.fieldName)]
+  }
 }
 
 internal struct AssetUploadToken: Encodable {
-    internal let recordName: String?
-    internal let recordType: String
-    internal let fieldName: String
+  internal let recordName: String?
+  internal let recordType: String
+  internal let fieldName: String
 }
 
 internal struct AssetCreateResponse: Decodable {
-    internal let tokens: [AssetUploadTarget]
+  internal let tokens: [AssetUploadTarget]
 }
 
 internal struct AssetUploadTarget: Decodable {
-    internal let recordName: String
-    internal let fieldName: String
-    internal let url: URL
+  internal let recordName: String
+  internal let fieldName: String
+  internal let url: URL
 }
 
 internal struct AssetUploadResponse: Codable {
-    internal let singleFile: AssetFileDefinition
+  internal let singleFile: AssetFileDefinition
 }
 
 public struct AssetFileDefinition: Codable {
-    let wrappingKey: String
-    let fileChecksum: String
-    let receipt: String?
-    let referenceChecksum: String
-    let size: Int
-    let downloadURL: String?
-    
-    internal func dictionary() -> [String: AnyObject] {
-        var result = [String: AnyObject]()
-        let mirror = Mirror(reflecting: self)
-        for child in mirror.children {
-            if let value = child.value as? String {
-                result[child.label!] = value as AnyObject
-            } else if let value = child.value as? Int {
-                result[child.label!] = value as AnyObject
-            }
-        }
-        return result
+  let wrappingKey: String
+  let fileChecksum: String
+  let receipt: String?
+  let referenceChecksum: String
+  let size: Int
+  let downloadURL: String?
+
+  internal func dictionary() -> [String: AnyObject] {
+    var result = [String: AnyObject]()
+    let mirror = Mirror(reflecting: self)
+    for child in mirror.children {
+      if let value = child.value as? String {
+        result[child.label!] = value as AnyObject
+      } else if let value = child.value as? Int {
+        result[child.label!] = value as AnyObject
+      }
     }
+    return result
+  }
 }

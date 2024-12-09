@@ -17,29 +17,29 @@
 import Foundation
 
 extension Raw {
-    internal struct RecordError {
-        let recordName: String
-        let reason: String
-        let serverErrorCode: String
+  internal struct RecordError {
+    let recordName: String
+    let reason: String
+    let serverErrorCode: String
 
-        internal var isConflict: Bool {
-            serverErrorCode == "CONFLICT"
-        }
-        
-        internal var isAtomic: Bool {
-            serverErrorCode == "ATOMIC_ERROR"
-        }
+    internal var isConflict: Bool {
+      serverErrorCode == "CONFLICT"
     }
+
+    internal var isAtomic: Bool {
+      serverErrorCode == "ATOMIC_ERROR"
+    }
+  }
 }
 
 extension Raw.RecordError {
-    internal init?(from received: Raw.RecordOrError) {
-        guard let reason = received.reason, let code = received.serverErrorCode else {
-            return nil
-        }
-        
-        self.recordName = received.recordName
-        self.reason = reason
-        self.serverErrorCode = code
+  internal init?(from received: Raw.RecordOrError) {
+    guard let reason = received.reason, let code = received.serverErrorCode else {
+      return nil
     }
+
+    self.recordName = received.recordName
+    self.reason = reason
+    self.serverErrorCode = code
+  }
 }

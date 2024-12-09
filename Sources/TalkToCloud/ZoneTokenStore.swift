@@ -17,22 +17,22 @@
 import Foundation
 
 public struct ZoneTokenStore {
-    private let onKnownToken: ((CloudZone) -> String?)
-    private let onMarkToken: ((String, CloudZone) -> Void)
-    
-    public init(
-        onKnownToken: @escaping ((CloudZone) -> String?),
-        onMarkToken: @escaping ((String, CloudZone) -> Void)
-    ) {
-        self.onKnownToken = onKnownToken
-        self.onMarkToken = onMarkToken
-    }
-    
-    public func knownToken(in zone: CloudZone) -> String? {
-        onKnownToken(zone)
-    }
-    
-    public func mark(token: String, in zone: CloudZone) {
-        onMarkToken(token, zone)
-    }
+  private let onKnownToken: ((CloudZone) -> String?)
+  private let onMarkToken: ((String, CloudZone) -> Void)
+
+  public init(
+    onKnownToken: @escaping ((CloudZone) -> String?),
+    onMarkToken: @escaping ((String, CloudZone) -> Void)
+  ) {
+    self.onKnownToken = onKnownToken
+    self.onMarkToken = onMarkToken
+  }
+
+  public func knownToken(in zone: CloudZone) -> String? {
+    onKnownToken(zone)
+  }
+
+  public func mark(token: String, in zone: CloudZone) {
+    onMarkToken(token, zone)
+  }
 }

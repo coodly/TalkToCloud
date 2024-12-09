@@ -17,7 +17,7 @@
 import Foundation
 
 extension Raw {
-    internal struct LookupName: Codable {
-        let recordName: String
-    }
+  internal struct LookupName: Codable {
+    let recordName: String
+  }
 }

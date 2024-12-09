@@ -17,16 +17,16 @@
 import Foundation
 
 internal class CreateZoneRequest: Request<CloudZonesList> {
-    private let name: String
-    init(name: String, variables: Variables) {
-        self.name = name
-        
-        super.init(variables: variables)
-    }
-    
-    override func performRequest() {
-        let request = Raw.Request().modify(operation: Raw.Operation.create.zone(named: name))
-        
-        post(to: "/zones/modify", body: request, in: .private)
-    }
+  private let name: String
+  init(name: String, variables: Variables) {
+    self.name = name
+
+    super.init(variables: variables)
+  }
+
+  override func performRequest() {
+    let request = Raw.Request().modify(operation: Raw.Operation.create.zone(named: name))
+
+    post(to: "/zones/modify", body: request, in: .private)
+  }
 }

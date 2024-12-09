@@ -17,26 +17,26 @@
 import Foundation
 
 public struct CloudZone: Codable {
-    let zoneID: Raw.ZoneID
-    let syncToken: String?
-    
-    public var name: String {
-        zoneID.zoneName
-    }
-    
-    public static let defaultZone = CloudZone(name: "_defaultZone")
+  let zoneID: Raw.ZoneID
+  let syncToken: String?
+
+  public var name: String {
+    zoneID.zoneName
+  }
+
+  public static let defaultZone = CloudZone(name: "_defaultZone")
 }
 
 extension CloudZone {
-    public init(name: String) {
-        zoneID = Raw.ZoneID(zoneName: name, ownerRecordName: nil, zoneType: nil)
-        syncToken = nil
-    }
+  public init(name: String) {
+    zoneID = Raw.ZoneID(zoneName: name, ownerRecordName: nil, zoneType: nil)
+    syncToken = nil
+  }
 }
 
 extension CloudZone {
-    internal var raw: Raw.Zone {
-        Raw.Zone(zoneID: zoneID)
-    }
+  internal var raw: Raw.Zone {
+    Raw.Zone(zoneID: zoneID)
+  }
 }
 

@@ -17,11 +17,11 @@
 import Foundation
 
 extension Raw {
-    internal struct Timestamp: Codable {
-        let timestamp: Double
-        
-        internal var date: Date {
-            return timestamp.millisecondsToDate
-        }
+  internal struct Timestamp: Codable {
+    let timestamp: Double
+
+    internal var date: Date {
+      return timestamp.millisecondsToDate
     }
+  }
 }

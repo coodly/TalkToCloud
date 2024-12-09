@@ -17,35 +17,35 @@
 import Foundation
 
 extension Raw {
-    internal struct Query: Codable {
-        let recordType: String
-        let sortBy: Sort?
-        let filterBy: Filter?
-    }
+  internal struct Query: Codable {
+    let recordType: String
+    let sortBy: Sort?
+    let filterBy: Filter?
+  }
 }
 
 extension Raw.Query {
-    internal init(recordType: String) {
-        self.recordType = recordType
-        sortBy = nil
-        filterBy = nil
-    }
+  internal init(recordType: String) {
+    self.recordType = recordType
+    sortBy = nil
+    filterBy = nil
+  }
 }
 
 extension Raw.Query {
-    internal func with(sort: Sort?) -> Raw.Query {
-        guard let sort = sort else {
-            return self
-        }
-        
-        return Raw.Query(recordType: recordType, sortBy: sort, filterBy: filterBy)
+  internal func with(sort: Sort?) -> Raw.Query {
+    guard let sort = sort else {
+      return self
     }
 
-    internal func with(filter: Filter?) -> Raw.Query {
-        guard let filter = filter else {
-            return self
-        }
-        
-        return Raw.Query(recordType: recordType, sortBy: sortBy, filterBy: filter)
+    return Raw.Query(recordType: recordType, sortBy: sort, filterBy: filterBy)
+  }
+
+  internal func with(filter: Filter?) -> Raw.Query {
+    guard let filter = filter else {
+      return self
     }
+
+    return Raw.Query(recordType: recordType, sortBy: sortBy, filterBy: filter)
+  }
 }

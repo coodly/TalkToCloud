@@ -17,11 +17,11 @@
 import Foundation
 
 internal struct CloudZonesList: Codable {
-    let zones: [CloudZone]
+  let zones: [CloudZone]
 }
 
 internal class ListZonesRequest: Request<CloudZonesList> {
-    override func performRequest() {
-        get(from: "/zones/list", database: .private)
-    }
+  override func performRequest() {
+    get(from: "/zones/list", database: .private)
+  }
 }

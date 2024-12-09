@@ -16,19 +16,19 @@
 
 import Foundation
 #if canImport(FoundationNetworking)
-import FoundationNetworking
+  import FoundationNetworking
 #endif
 
 public typealias NetworkFetchClosure = (Data?, URLResponse?, Error?) -> ()
 
 public struct NetworkFetch {
-    private let onFetch: ((URLRequest, NetworkFetchClosure) -> Void)
-    
-    public init(onFetch: @escaping ((URLRequest, NetworkFetchClosure) -> Void)) {
-        self.onFetch = onFetch
-    }
-    
-    public func fetch(_ request: URLRequest, completion: NetworkFetchClosure) {
-        onFetch(request, completion)
-    }
+  private let onFetch: ((URLRequest, NetworkFetchClosure) -> Void)
+
+  public init(onFetch: @escaping ((URLRequest, NetworkFetchClosure) -> Void)) {
+    self.onFetch = onFetch
+  }
+
+  public func fetch(_ request: URLRequest, completion: NetworkFetchClosure) {
+    onFetch(request, completion)
+  }
 }

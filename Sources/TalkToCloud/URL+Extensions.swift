@@ -17,16 +17,16 @@
 import Foundation
 
 extension URL {
-    internal func appending(param: String, value: String) -> URL {
-        let append = "\(param)=\(value.ckEncoded)"
-        var string = absoluteString
-        if string.range(of: "?") == nil {
-            string.append("?")
-        } else {
-            string.append("&")
-        }
-        string.append(append)
-        
-        return URL(string: string)!
+  internal func appending(param: String, value: String) -> URL {
+    let append = "\(param)=\(value.ckEncoded)"
+    var string = absoluteString
+    if string.range(of: "?") == nil {
+      string.append("?")
+    } else {
+      string.append("&")
     }
+    string.append(append)
+
+    return URL(string: string)!
+  }
 }

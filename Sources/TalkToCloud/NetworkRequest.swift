@@ -16,25 +16,25 @@
 
 import Foundation
 #if canImport(FoundationNetworking)
-import FoundationNetworking
+  import FoundationNetworking
 #endif
 
 class NetworkRequest {
-    private static let baseURL = URL(string: "https://api.apple-cloudkit.com")!
+  private static let baseURL = URL(string: "https://api.apple-cloudkit.com")!
     
-    func POST(to path: String, body: Data) {
+  func POST(to path: String, body: Data) {
         
-    }
+  }
     
-    func execute() {
-        fatalError("Override \(#function)")
-    }
+  func execute() {
+    fatalError("Override \(#function)")
+  }
     
-    func handleResult(data: Data?, response: URLResponse?, error: Error?) {
+  func handleResult(data: Data?, response: URLResponse?, error: Error?) {
         
-    }
+  }
     
-    func customHeaders() -> [String : String] {
-        return [:]
-    }
+  func customHeaders() -> [String : String] {
+    return [:]
+  }
 }

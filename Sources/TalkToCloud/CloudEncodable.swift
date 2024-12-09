@@ -17,7 +17,7 @@
 import Foundation
 
 public protocol CloudEncodable: Encodable {
-    var recordType: String { get }
-    var recordName: String { get }
-    var recordChangeTag: String? { get }
+  var recordType: String { get }
+  var recordName: String { get }
+  var recordChangeTag: String? { get }
 }

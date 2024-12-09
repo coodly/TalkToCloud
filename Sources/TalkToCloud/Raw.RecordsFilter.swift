@@ -17,81 +17,81 @@
 import Foundation
 
 extension Raw {
-    internal struct RecordsFilter: Codable {
-        enum Comparator: String, Codable {
-            case equals = "EQUALS"
-            case notEquals = "NOT_EQUALS"
-            case `in` = "IN"
-            case lessThan = "LESS_THAN"
-            case lessThanOrEquals = "LESS_THAN_OR_EQUALS"
-            case greaterThan = "GREATER_THAN"
-            case greaterThanOrEquals = "GREATER_THAN_OR_EQUALS"
-        }
-
-        struct Value: Codable {
-            init(from decoder: Decoder) throws {
-                fatalError()
-            }
-            
-            func encode(to encoder: Encoder) throws {
-                var container = encoder.container(keyedBy: CodingKeys.self)
-                
-                if let value = string {
-                    try container.encode(value, forKey: .value)
-                } else if let value = stringList {
-                    try container.encode(value, forKey: .value)
-                } else if let value = double {
-                    try container.encode(value, forKey: .value)
-                } else if let value = doubleList {
-                    try container.encode(value, forKey: .value)
-                } else if let value = int64 {
-                    try container.encode(value, forKey: .value)
-                } else if let value = int64List {
-                    try container.encode(value, forKey: .value)
-                } else if let value = date {
-                    try container.encode(value.milliseconds(), forKey: .value)
-                } else {
-                    dump(self)
-                    fatalError()
-                }
-            }
-            
-            let string: String?
-            let stringList: [String]?
-            let double: Double?
-            let doubleList: [Double]?
-            let int64: Int64?
-            let int64List: [Int64]?
-            let date: Date?
-            
-            enum CodingKeys: String, CodingKey {
-                case value
-            }
-        }
-
-        let fieldName: String
-        let comparator: Comparator
-        let fieldValue: Value
+  internal struct RecordsFilter: Codable {
+    enum Comparator: String, Codable {
+      case equals = "EQUALS"
+      case notEquals = "NOT_EQUALS"
+      case `in` = "IN"
+      case lessThan = "LESS_THAN"
+      case lessThanOrEquals = "LESS_THAN_OR_EQUALS"
+      case greaterThan = "GREATER_THAN"
+      case greaterThanOrEquals = "GREATER_THAN_OR_EQUALS"
     }
+
+    struct Value: Codable {
+      init(from decoder: Decoder) throws {
+        fatalError()
+      }
+
+      func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+
+        if let value = string {
+          try container.encode(value, forKey: .value)
+        } else if let value = stringList {
+          try container.encode(value, forKey: .value)
+        } else if let value = double {
+          try container.encode(value, forKey: .value)
+        } else if let value = doubleList {
+          try container.encode(value, forKey: .value)
+        } else if let value = int64 {
+          try container.encode(value, forKey: .value)
+        } else if let value = int64List {
+          try container.encode(value, forKey: .value)
+        } else if let value = date {
+          try container.encode(value.milliseconds(), forKey: .value)
+        } else {
+          dump(self)
+          fatalError()
+        }
+      }
+
+      let string: String?
+      let stringList: [String]?
+      let double: Double?
+      let doubleList: [Double]?
+      let int64: Int64?
+      let int64List: [Int64]?
+      let date: Date?
+
+      enum CodingKeys: String, CodingKey {
+        case value
+      }
+    }
+
+    let fieldName: String
+    let comparator: Comparator
+    let fieldValue: Value
+  }
 }
 
 extension Raw.RecordsFilter.Value {
-    init(any: Codable) {
-        string = any as? String
-        stringList = any as? [String]
-        double = any as? Double
-        doubleList = any as? [Double]
-        date = any as? Date
+  init(any: Codable) {
+    string = any as? String
+    stringList = any as? [String]
+    double = any as? Double
+    doubleList = any as? [Double]
+    date = any as? Date
 
-        if let int = any as? Int {
-            int64 = Int64(int)
-        } else {
-            int64 = any as? Int64
-        }
-        if let ints = any as? [Int] {
-            int64List = ints.map({ Int64($0) })
-        } else {
-            int64List = any as? [Int64]
-        }
+    if let int = any as? Int {
+      int64 = Int64(int)
+    } else {
+      int64 = any as? Int64
     }
+    if let ints = any as? [Int] {
+      int64List = ints.map({ Int64($0) })
+    } else {
+      int64List = any as? [Int64]
+    }
+  }
 }

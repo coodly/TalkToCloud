@@ -17,21 +17,21 @@
 import Foundation
 
 extension Raw {
-    internal struct Response: Codable {
-        private let records: [Raw.RecordOrError]
-        internal let continuationMarker: String?
-        
-        internal var received: [Raw.Record] {
-            records.compactMap({ Raw.Record(from: $0) })
-        }
+  internal struct Response: Codable {
+    private let records: [Raw.RecordOrError]
+    internal let continuationMarker: String?
 
-        internal var deleted: [Raw.RecordID] {
-            records.filter(\.isDeleted).map({ Raw.RecordID(recordName: $0.recordName) })
-        }
-        
-        internal var errors: [Raw.RecordError] {
-            records.compactMap({ Raw.RecordError(from: $0) })
-        }
+    internal var received: [Raw.Record] {
+      records.compactMap({ Raw.Record(from: $0) })
     }
+
+    internal var deleted: [Raw.RecordID] {
+      records.filter(\.isDeleted).map({ Raw.RecordID(recordName: $0.recordName) })
+    }
+
+    internal var errors: [Raw.RecordError] {
+      records.compactMap({ Raw.RecordError(from: $0) })
+    }
+  }
 }
 

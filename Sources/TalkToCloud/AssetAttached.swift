@@ -17,5 +17,5 @@
 import Foundation
 
 public protocol AssetAttached {
-    mutating func attach(_ asset: AssetFileDefinition, fieldName: String)
+  mutating func attach(_ asset: AssetFileDefinition, fieldName: String)
 }

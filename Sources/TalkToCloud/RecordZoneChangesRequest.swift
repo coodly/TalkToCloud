@@ -17,18 +17,18 @@
 import Foundation
 
 internal class RecordZoneChangesRequest: Request<Raw.ZoneChangesList> {
-    private let zone: Raw.Zone
-    private let token: String?
-    
-    internal init(zone: Raw.Zone, token: String?, variables: Variables) {
-        self.zone = zone
-        self.token = token
-        
-        super.init(variables: variables)
-    }
-    
-    override func performRequest() {
-        let body = Raw.Request().query(in: zone, since: token)
-        post(to: "/changes/zone", body: body, in: .private)
-    }
+  private let zone: Raw.Zone
+  private let token: String?
+
+  internal init(zone: Raw.Zone, token: String?, variables: Variables) {
+    self.zone = zone
+    self.token = token
+
+    super.init(variables: variables)
+  }
+
+  override func performRequest() {
+    let body = Raw.Request().query(in: zone, since: token)
+    post(to: "/changes/zone", body: body, in: .private)
+  }
 }

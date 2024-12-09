@@ -17,5 +17,5 @@
 import Foundation
 
 public protocol ContainerConsumer {
-    var container: CloudContainer! { get set }
+  var container: CloudContainer! { get set }
 }

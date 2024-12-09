@@ -17,7 +17,7 @@
 import Foundation
 
 public struct CloudReference: Codable {
-    public let recordName: String
-    let action: ReferenceAction
-    let zoneID: Raw.ZoneID
+  public let recordName: String
+  let action: ReferenceAction
+  let zoneID: Raw.ZoneID
 }

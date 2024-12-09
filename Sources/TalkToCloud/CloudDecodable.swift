@@ -17,9 +17,9 @@
 import Foundation
 
 public protocol CloudDecodable: Decodable {
-    static var recordType: String { get }
-    
-    var recordName: String { get set }
-    var recordChangeTag: String { get set }
-    var deleted: Bool { get set }
+  static var recordType: String { get }
+
+  var recordName: String { get set }
+  var recordChangeTag: String { get set }
+  var deleted: Bool { get set }
 }

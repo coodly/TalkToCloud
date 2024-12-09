@@ -17,14 +17,14 @@
 import Foundation
 
 public enum CloudDatabase: String {
-    case `public` = "public"
-    case `private` = "private"
-    case shared = "shared"
+  case `public` = "public"
+  case `private` = "private"
+  case shared = "shared"
 }
 
 public enum Environment: String {
-    case development = "development"
-    case production = "production"
+  case development = "development"
+  case production = "production"
 }
 
 //public enum EnumFilter {
@@ -113,5 +113,5 @@ public enum Environment: String {
 //}
 
 public protocol CloudRequest {
-    func fetchFirst(filter: Filter?, sort: Sort?, in container: String, env: Environment, database: CloudDatabase)
+  func fetchFirst(filter: Filter?, sort: Sort?, in container: String, env: Environment, database: CloudDatabase)
 }

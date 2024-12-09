@@ -19,55 +19,55 @@ import CustomDump
 import XCTest
 
 final class FilterEncodeTests: XCTestCase {
-    func testEqualsIntEncoding() throws {
-        let checked: Filter = .equals("tmdbID", 123)
-        let expected =
-        """
+  func testEqualsIntEncoding() throws {
+    let checked: Filter = .equals("tmdbID", 123)
+    let expected =
+      """
+      {
+        "fieldName" : "tmdbID",
+        "fieldValue" : {
+          "value" : 123
+        },
+        "comparator" : "EQUALS"
+      }
+      """
+    try AssertEncoded(object: checked, expected: expected)
+  }
+
+  func testAndEncoding() throws {
+    let checked: Filter = .and([.equals("tmdbID", 123), .in("recordName", ["fake", "bake", "shake"])])
+    let expected =
+      """
+      [
         {
           "fieldName" : "tmdbID",
           "fieldValue" : {
             "value" : 123
           },
           "comparator" : "EQUALS"
-        }
-        """
-        try AssertEncoded(object: checked, expected: expected)
-    }
-    
-    func testAndEncoding() throws {
-        let checked: Filter = .and([.equals("tmdbID", 123), .in("recordName", ["fake", "bake", "shake"])])
-        let expected =
-        """
-        [
-          {
-            "fieldName" : "tmdbID",
-            "fieldValue" : {
-              "value" : 123
-            },
-            "comparator" : "EQUALS"
+        },
+        {
+          "fieldName" : "recordName",
+          "fieldValue" : {
+            "value" : [
+              "fake",
+              "bake",
+              "shake"
+            ]
           },
-          {
-            "fieldName" : "recordName",
-            "fieldValue" : {
-              "value" : [
-                "fake",
-                "bake",
-                "shake"
-              ]
-            },
-            "comparator" : "IN"
-          }
-        ]
-        """
-        try AssertEncoded(object: checked, expected: expected)
-    }
+          "comparator" : "IN"
+        }
+      ]
+      """
+    try AssertEncoded(object: checked, expected: expected)
+  }
 
-    private func AssertEncoded<Checked: Encodable>(object: Checked, expected: String, file: StaticString = #file, line: UInt = #line) throws {
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = .prettyPrinted
-        
-        let data = try encoder.encode(object)
-        let string = String(data: data, encoding: .utf8)
-        XCTAssertNoDifference(expected, string, file: file, line: line)
-    }
+  private func AssertEncoded<Checked: Encodable>(object: Checked, expected: String, file: StaticString = #file, line: UInt = #line) throws {
+    let encoder = JSONEncoder()
+    encoder.outputFormatting = .prettyPrinted
+
+    let data = try encoder.encode(object)
+    let string = String(data: data, encoding: .utf8)
+    XCTAssertNoDifference(expected, string, file: file, line: line)
+  }
 }

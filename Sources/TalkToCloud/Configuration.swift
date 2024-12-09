@@ -17,51 +17,51 @@
 import Foundation
 
 public struct Configuration {
-    private let identifier: String
-    public init(containerId: String) {
-        identifier = containerId
-    }
-    
-    public func productionContainer(with fetch: NetworkFetch) -> CloudContainer? {
-        return container(for: .production, using: fetch)
+  private let identifier: String
+  public init(containerId: String) {
+    identifier = containerId
+  }
+
+  public func productionContainer(with fetch: NetworkFetch) -> CloudContainer? {
+    return container(for: .production, using: fetch)
+  }
+
+  public func developmentContainer(with fetch: NetworkFetch) -> CloudContainer? {
+    return container(for: .development, using: fetch)
+  }
+
+  private func container(for env: Environment, using fetch: NetworkFetch) -> CloudContainer? {
+    guard let auth = auth(for: env) else {
+      Logging.error("No auth")
+      return nil
     }
 
-    public func developmentContainer(with fetch: NetworkFetch) -> CloudContainer? {
-        return container(for: .development, using: fetch)
-    }
+    return CloudContainer(identifier: "iCloud.\(identifier)", env: env, authenticator: auth, fetch: fetch)
+  }
 
-    private func container(for env: Environment, using fetch: NetworkFetch) -> CloudContainer? {
-        guard let auth = auth(for: env) else {
-            Logging.error("No auth")
-            return nil
-        }
-        
-        return CloudContainer(identifier: "iCloud.\(identifier)", env: env, authenticator: auth, fetch: fetch)
+  internal func auth(for env: Environment) -> PrivateKeyAuthenticator? {
+    guard let keyID = key(for: env) else {
+      Logging.error("No key")
+      return nil
     }
-    
-    internal func auth(for env: Environment) -> PrivateKeyAuthenticator? {
-        guard let keyID = key(for: env) else {
-            Logging.error("No key")
-            return nil
-        }
-        let pem = URL(fileURLWithPath: FileManager.default.currentDirectoryPath).appendingPathComponent("Config", isDirectory: true).appendingPathComponent("\(identifier)-\(env.rawValue).pem")
-        #if os(macOS)
-        let sign = SignData.system(pathToPEM: pem)
-        #else
-        let sign = SignData.openSSL(pathToPEM: pem)
-        #endif
-        return PrivateKeyAuthenticator(apiKeyID: keyID, sign: sign)
+    let pem = URL(fileURLWithPath: FileManager.default.currentDirectoryPath).appendingPathComponent("Config", isDirectory: true).appendingPathComponent("\(identifier)-\(env.rawValue).pem")
+    #if os(macOS)
+      let sign = SignData.system(pathToPEM: pem)
+    #else
+      let sign = SignData.openSSL(pathToPEM: pem)
+    #endif
+    return PrivateKeyAuthenticator(apiKeyID: keyID, sign: sign)
+  }
+
+  private func key(for env: Environment) -> String? {
+    let fileURL = URL(fileURLWithPath: "Config/\(identifier)-\(env.rawValue).key")
+    Logging.log(fileURL)
+    do {
+      let devData = try Data(contentsOf: URL(fileURLWithPath: "Config/\(identifier)-\(env.rawValue).key"))
+      return String(data: devData, encoding: .utf8)!.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+    } catch {
+      Logging.error(error)
+      return nil
     }
-    
-    private func key(for env: Environment) -> String? {
-        let fileURL = URL(fileURLWithPath: "Config/\(identifier)-\(env.rawValue).key")
-        Logging.log(fileURL)
-        do {
-            let devData = try Data(contentsOf: URL(fileURLWithPath: "Config/\(identifier)-\(env.rawValue).key"))
-            return String(data: devData, encoding: .utf8)!.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
-        } catch {
-            Logging.error(error)
-            return nil
-        }
-    }
+  }
 }

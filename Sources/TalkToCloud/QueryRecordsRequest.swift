@@ -17,15 +17,15 @@
 import Foundation
 
 internal class QueryRecordsRequest: Request<Raw.Response> {
-    private let body: Raw.Request
-    private let database: CloudDatabase
-    internal init(body: Raw.Request, database: CloudDatabase, variables: Variables) {
-        self.body = body
-        self.database = database
-        
-        super.init(variables: variables)
-    }
-    override func performRequest() {
-        post(to: "/records/query", body: body, in: database)
-    }
+  private let body: Raw.Request
+  private let database: CloudDatabase
+  internal init(body: Raw.Request, database: CloudDatabase, variables: Variables) {
+    self.body = body
+    self.database = database
+
+    super.init(variables: variables)
+  }
+  override func performRequest() {
+    post(to: "/records/query", body: body, in: database)
+  }
 }

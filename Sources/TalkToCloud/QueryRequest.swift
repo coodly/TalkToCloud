@@ -17,5 +17,5 @@
 import Foundation
 
 internal class QueryRequest: Request<User> {
-    
+
 }

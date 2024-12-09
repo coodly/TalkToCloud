@@ -17,64 +17,64 @@
 import Foundation
 
 extension Raw {
-    internal struct Operation: Encodable {
-        let operationType: OperationType
-        var zone: Raw.Zone?
-        var record: Raw.SavedRecord?
+  internal struct Operation: Encodable {
+    let operationType: OperationType
+    var zone: Raw.Zone?
+    var record: Raw.SavedRecord?
         
-        static var create: Operation {
-            Operation(operationType: .create)
-        }
-
-        static var update: Operation {
-            Operation(operationType: .update)
-        }
-
-        func zone(named: String) -> Operation {
-            var modified = self
-            
-            modified.zone = Raw.Zone(zoneID: Raw.ZoneID(zoneName: named, ownerRecordName: nil, zoneType: nil), syncToken: nil)
-            
-            return modified
-        }
-        
-        internal func with(record: Raw.SavedRecord) -> Operation {
-            var modified = self
-            modified.record = record
-            return modified
-        }
+    static var create: Operation {
+      Operation(operationType: .create)
     }
+
+    static var update: Operation {
+      Operation(operationType: .update)
+    }
+
+    func zone(named: String) -> Operation {
+      var modified = self
+            
+      modified.zone = Raw.Zone(zoneID: Raw.ZoneID(zoneName: named, ownerRecordName: nil, zoneType: nil), syncToken: nil)
+            
+      return modified
+    }
+        
+    internal func with(record: Raw.SavedRecord) -> Operation {
+      var modified = self
+      modified.record = record
+      return modified
+    }
+  }
 }
 
 extension Raw.Operation {
-    internal init(record: Raw.SavedRecord) {
-        if record.recordChangeTag != nil {
-            self.operationType = .update
-        } else {
-            self.operationType = .create
-        }
+  internal init(record: Raw.SavedRecord) {
+    if record.recordChangeTag != nil {
+      self.operationType = .update
+    } else {
+      self.operationType = .create
+    }
             
-        self.record = record
-    }
+    self.record = record
+  }
     
-    internal init(delete: Raw.RecordID) {
-        operationType = .forceDelete
-        record = Raw.SavedRecord(delete: delete)
-    }
+  internal init(delete: Raw.RecordID) {
+    operationType = .forceDelete
+    record = Raw.SavedRecord(delete: delete)
+  }
     
-    internal init(deleteName: String) {
-        self.init(delete: Raw.RecordID(recordName: deleteName))
-    }
+  internal init(deleteName: String) {
+    self.init(delete: Raw.RecordID(recordName: deleteName))
+  }
 }
 
 extension Raw.Operation {
-    internal init(record: CloudEncodable) {
-        if record.recordChangeTag == nil {
-            self.operationType = .create
-        } else {
-            self.operationType = .update
-        }
-        
-        self.record = Raw.SavedRecord(encoded: record)
+  internal init(record: CloudEncodable) {
+    if record.recordChangeTag == nil {
+      self.operationType = .create
+    } else {
+      self.operationType = .update
     }
+        
+    self.record = Raw.SavedRecord(encoded: record)
+  }
 }

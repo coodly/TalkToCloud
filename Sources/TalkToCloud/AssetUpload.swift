@@ -17,17 +17,17 @@
 import Foundation
 
 public struct AssetUpload {
-    public let recordName: String?
-    public let recordType: String
-    public let fieldName: String
-    public let data: Data
-    public let zone: CloudZone
+  public let recordName: String?
+  public let recordType: String
+  public let fieldName: String
+  public let data: Data
+  public let zone: CloudZone
 
-    public init(recordName: String? = nil, recordType: String, fieldName: String, data: Data, zone: CloudZone = .defaultZone) {
-        self.recordName = recordName
-        self.recordType = recordType
-        self.fieldName = fieldName
-        self.data = data
-        self.zone = zone
-    }
+  public init(recordName: String? = nil, recordType: String, fieldName: String, data: Data, zone: CloudZone = .defaultZone) {
+    self.recordName = recordName
+    self.recordType = recordType
+    self.fieldName = fieldName
+    self.data = data
+    self.zone = zone
+  }
 }

@@ -17,37 +17,37 @@
 import Foundation
 
 extension Raw {
-    internal struct SavedRecord: Encodable {
-        let recordName: String
-        let recordType: String
-        let recordChangeTag: String?
-        let fields: [String: Raw.Field]
+  internal struct SavedRecord: Encodable {
+    let recordName: String
+    let recordType: String
+    let recordChangeTag: String?
+    let fields: [String: Raw.Field]
 
-        internal func replacing(fields: [String: Raw.Field]) -> SavedRecord {
-            SavedRecord(recordName: recordName, recordType: recordType, recordChangeTag: recordChangeTag, fields: fields)
-        }
+    internal func replacing(fields: [String: Raw.Field]) -> SavedRecord {
+      SavedRecord(recordName: recordName, recordType: recordType, recordChangeTag: recordChangeTag, fields: fields)
     }
+  }
 }
 
 extension Raw.SavedRecord {
-    internal init(record: Raw.Record, withChange: Bool = true) {
-        self.recordName = record.recordName
-        self.recordType = record.recordType
-        self.recordChangeTag = withChange ? record.recordChangeTag : nil
-        self.fields = record.fields
-    }
-    
-    internal init(delete: Raw.RecordID) {
-        recordName = delete.recordName
-        recordType = "Forced - does not matter"
-        recordChangeTag = "Forced - does not matter"
-        fields = [:]
-    }
-    
-    internal init(encoded: CloudEncodable) {
-        recordName = encoded.recordName
-        recordType = encoded.recordType
-        recordChangeTag = encoded.recordChangeTag
-        fields = Raw.Field.encodeFields(in: encoded)
-    }
+  internal init(record: Raw.Record, withChange: Bool = true) {
+    self.recordName = record.recordName
+    self.recordType = record.recordType
+    self.recordChangeTag = withChange ? record.recordChangeTag : nil
+    self.fields = record.fields
+  }
+
+  internal init(delete: Raw.RecordID) {
+    recordName = delete.recordName
+    recordType = "Forced - does not matter"
+    recordChangeTag = "Forced - does not matter"
+    fields = [:]
+  }
+
+  internal init(encoded: CloudEncodable) {
+    recordName = encoded.recordName
+    recordType = encoded.recordType
+    recordChangeTag = encoded.recordChangeTag
+    fields = Raw.Field.encodeFields(in: encoded)
+  }
 }

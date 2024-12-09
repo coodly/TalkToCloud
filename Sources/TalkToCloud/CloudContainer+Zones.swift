@@ -17,37 +17,37 @@
 import Foundation
 
 extension CloudContainer {
-    public func listZones(completion: @escaping ((Result<[CloudZone], Error>) -> Void)) {
-        let request = ListZonesRequest(variables: variables)
-        let handler: ((Result<CloudZonesList, Error>) -> Void) = {
-            result in
+  public func listZones(completion: @escaping ((Result<[CloudZone], Error>) -> Void)) {
+    let request = ListZonesRequest(variables: variables)
+    let handler: ((Result<CloudZonesList, Error>) -> Void) = {
+      result in
             
-            switch result {
-            case .success(let list):
-                completion(.success(list.zones))
-            case .failure(let error):
-                completion(.failure(error))
-            }
-        }
-        request.perform(completion: handler)
+      switch result {
+      case .success(let list):
+        completion(.success(list.zones))
+      case .failure(let error):
+        completion(.failure(error))
+      }
     }
+    request.perform(completion: handler)
+  }
     
     
-    public func create(zone named: String, completion: @escaping ((Result<CloudZone, Error>) -> Void)) {
-        let request = CreateZoneRequest(name: named, variables: variables)
-        request.perform() {
-            result in
+  public func create(zone named: String, completion: @escaping ((Result<CloudZone, Error>) -> Void)) {
+    let request = CreateZoneRequest(name: named, variables: variables)
+    request.perform() {
+      result in
             
-            switch result {
-            case .success(let list):
-                completion(.success(list.zones.first!))
-            case .failure(let error):
-                completion(.failure(error))
-            }
-        }
+      switch result {
+      case .success(let list):
+        completion(.success(list.zones.first!))
+      case .failure(let error):
+        completion(.failure(error))
+      }
     }
+  }
     
-    internal func checZonesExist(_ zones: [CloudZone]) {
+  internal func checZonesExist(_ zones: [CloudZone]) {
         
-    }
+  }
 }

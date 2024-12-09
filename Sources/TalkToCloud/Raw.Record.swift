@@ -17,63 +17,63 @@
 import Foundation
 
 extension Raw {
-    internal struct Record: Codable {
-        let recordName: String
-        let recordType: String
-        let recordChangeTag: String
-        let fields: [String: Raw.Field]
-        let created: Raw.Timestamp
-        let modified: Raw.Timestamp
+  internal struct Record: Codable {
+    let recordName: String
+    let recordType: String
+    let recordChangeTag: String
+    let fields: [String: Raw.Field]
+    let created: Raw.Timestamp
+    let modified: Raw.Timestamp
 
-        internal var containsAsset: Bool {
-            fields.values.filter({ $0.type == .assetId }).count > 0
-        }
-
-        internal func updating(fields: [String: Raw.Field]) -> Raw.Record {
-            var updatedFields = self.fields
-            fields.forEach({ updatedFields[$0] = $1 })
-            
-            return Record(
-                recordName: recordName,
-                recordType: recordType,
-                recordChangeTag: recordChangeTag,
-                fields: updatedFields,
-                created: created,
-                modified: modified
-            )
-        }
-        
-        internal var withoutAssets: Record {
-            let updatedFields = fields.filter({ $1.type != .assetId })
-            
-            return Record(
-                recordName: recordName,
-                recordType: recordType,
-                recordChangeTag: recordChangeTag,
-                fields: updatedFields,
-                created: created,
-                modified: modified
-            )
-        }
+    internal var containsAsset: Bool {
+      fields.values.filter({ $0.type == .assetId }).count > 0
     }
+
+    internal func updating(fields: [String: Raw.Field]) -> Raw.Record {
+      var updatedFields = self.fields
+      fields.forEach({ updatedFields[$0] = $1 })
+
+      return Record(
+        recordName: recordName,
+        recordType: recordType,
+        recordChangeTag: recordChangeTag,
+        fields: updatedFields,
+        created: created,
+        modified: modified
+      )
+    }
+
+    internal var withoutAssets: Record {
+      let updatedFields = fields.filter({ $1.type != .assetId })
+
+      return Record(
+        recordName: recordName,
+        recordType: recordType,
+        recordChangeTag: recordChangeTag,
+        fields: updatedFields,
+        created: created,
+        modified: modified
+      )
+    }
+  }
 }
 
 extension Raw.Record {
-    internal init?(from received: Raw.RecordOrError) {
-        guard let recordType = received.recordType,
-              let recordChangeTag = received.recordChangeTag,
-              let fields = received.fields,
-              let created = received.created,
-              let modified = received.modified
-        else {
-            return nil
-        }
-        
-        self.recordName = received.recordName
-        self.recordType = recordType
-        self.recordChangeTag = recordChangeTag
-        self.fields = fields
-        self.created = created
-        self.modified = modified
+  internal init?(from received: Raw.RecordOrError) {
+    guard let recordType = received.recordType,
+          let recordChangeTag = received.recordChangeTag,
+          let fields = received.fields,
+          let created = received.created,
+          let modified = received.modified
+    else {
+      return nil
     }
+
+    self.recordName = received.recordName
+    self.recordType = recordType
+    self.recordChangeTag = recordChangeTag
+    self.fields = fields
+    self.created = created
+    self.modified = modified
+  }
 }

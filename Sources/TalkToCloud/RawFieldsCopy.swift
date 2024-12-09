@@ -15,5 +15,5 @@
  */
 
 public protocol RawFieldsCopy {
-    var rawFields: [String: AnyObject]! { get set }
+  var rawFields: [String: AnyObject]! { get set }
 }

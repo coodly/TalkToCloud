@@ -17,31 +17,31 @@
 import Foundation
 
 public enum ReferenceAction: String, Codable {
-    case none = "NONE"
-    case deleteSelf = "DELETE_SELF"
-    case validate = "VALIDATE"
+  case none = "NONE"
+  case deleteSelf = "DELETE_SELF"
+  case validate = "VALIDATE"
 }
 
 public struct RemoteReference {
-    public let recordName: String
-    let action: ReferenceAction
-    let zone: CloudZone?
-    
-    public init(recordName: String, action: ReferenceAction = .deleteSelf, zone: CloudZone? = nil) {
-        self.recordName = recordName
-        self.action = action
-        self.zone = zone
+  public let recordName: String
+  let action: ReferenceAction
+  let zone: CloudZone?
+
+  public init(recordName: String, action: ReferenceAction = .deleteSelf, zone: CloudZone? = nil) {
+    self.recordName = recordName
+    self.action = action
+    self.zone = zone
+  }
+
+  func dictionary() -> [String: AnyObject] {
+    var result: [String: AnyObject] = ["recordName": recordName as AnyObject, "action": action.rawValue as AnyObject]
+    if let zone = zone {
+      result["zoneID"] = ["zoneName": zone.name] as AnyObject
     }
-    
-    func dictionary() -> [String: AnyObject] {
-        var result: [String: AnyObject] = ["recordName": recordName as AnyObject, "action": action.rawValue as AnyObject]
-        if let zone = zone {
-            result["zoneID"] = ["zoneName": zone.name] as AnyObject
-        }
-        return result
-    }
+    return result
+  }
 }
 
 extension RemoteReference: Decodable {
-    
+
 }

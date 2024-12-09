@@ -17,14 +17,14 @@
 import Foundation
 
 public struct Cursor<T: RemoteRecord> {
-    let path: String
-    let data: Data
-    var handler: ((CloudResult<T>) -> ())?
-    var continuation: String?
-    
-    func dataWithContinuation() -> Data {
-        var content = try! JSONSerialization.jsonObject(with: data) as! [String: AnyObject]
-        content["continuationMarker"] = continuation! as AnyObject
-        return try! JSONSerialization.data(withJSONObject: content)
-    }
+  let path: String
+  let data: Data
+  var handler: ((CloudResult<T>) -> ())?
+  var continuation: String?
+
+  func dataWithContinuation() -> Data {
+    var content = try! JSONSerialization.jsonObject(with: data) as! [String: AnyObject]
+    content["continuationMarker"] = continuation! as AnyObject
+    return try! JSONSerialization.data(withJSONObject: content)
+  }
 }

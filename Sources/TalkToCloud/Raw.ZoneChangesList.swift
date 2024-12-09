@@ -17,11 +17,11 @@
 import Foundation
 
 extension Raw {
-    internal struct ZoneChangesList: Codable {
-        let zones: [Raw.ZoneChanges]
+  internal struct ZoneChangesList: Codable {
+    let zones: [Raw.ZoneChanges]
 
-        internal func changes(in zone: Raw.Zone) -> Raw.ZoneChanges? {
-            zones.first(where: { $0.zoneID.zoneName == zone.zoneID.zoneName })
-        }
+    internal func changes(in zone: Raw.Zone) -> Raw.ZoneChanges? {
+      zones.first(where: { $0.zoneID.zoneName == zone.zoneID.zoneName })
     }
+  }
 }

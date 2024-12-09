@@ -17,6 +17,6 @@
 import Foundation
 
 public protocol Command {
-    init()
-    func execute(with arguments: [String])
+  init()
+  func execute(with arguments: [String])
 }

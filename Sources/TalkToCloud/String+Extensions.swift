@@ -17,9 +17,9 @@
 import Foundation
 
 extension String {
-    internal var ckEncoded: String {
-        replacingOccurrences(of: "+", with: "%2B")
-            .replacingOccurrences(of: "/", with: "%2F")
-            .replacingOccurrences(of: "=", with: "%3D")
-    }
+  internal var ckEncoded: String {
+    replacingOccurrences(of: "+", with: "%2B")
+      .replacingOccurrences(of: "/", with: "%2F")
+      .replacingOccurrences(of: "=", with: "%3D")
+  }
 }

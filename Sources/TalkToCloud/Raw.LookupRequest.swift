@@ -17,8 +17,8 @@
 import Foundation
 
 extension Raw {
-    internal struct LookupRequest: Codable {
-        let records: [Raw.LookupName]
-        let zoneID: Raw.ZoneID?
-    }
+  internal struct LookupRequest: Codable {
+    let records: [Raw.LookupName]
+    let zoneID: Raw.ZoneID?
+  }
 }

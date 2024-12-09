@@ -17,7 +17,7 @@
 import Foundation
 
 internal class UserRequest: Request<User> {
-    override func performRequest() {
-        get(from: "/users/current", database: .private)
-    }
+  override func performRequest() {
+    get(from: "/users/current", database: .private)
+  }
 }

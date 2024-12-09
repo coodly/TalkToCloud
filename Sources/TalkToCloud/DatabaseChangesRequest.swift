@@ -17,7 +17,7 @@
 import Foundation
 
 internal class DatabaseChangesRequest: Request<Raw.ZonesList> {
-    override func performRequest() {
-        post(to: "/changes/database", body: Raw.Request(), in: .private)
-    }
+  override func performRequest() {
+    post(to: "/changes/database", body: Raw.Request(), in: .private)
+  }
 }

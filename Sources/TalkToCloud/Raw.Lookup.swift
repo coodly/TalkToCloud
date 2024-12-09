@@ -15,7 +15,7 @@
  */
 
 extension Raw {
-    internal struct Lookup: Encodable {
-        let recordName: String
-    }
+  internal struct Lookup: Encodable {
+    let recordName: String
+  }
 }

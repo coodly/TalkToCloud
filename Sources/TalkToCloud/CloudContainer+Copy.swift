@@ -17,14 +17,14 @@
 import Foundation
 
 extension CloudContainer {
-    public func copyChanges(
-        to target: CloudContainer,
-        sourceToken: ZoneTokenStore,
-        chunked: Bool,
-        copyOrder: @escaping (([CloudZone]) -> [CloudZone]) = { return $0 })
-    {
-        Logging.log("Copy changes")
-        let copy = ContainerRecordsCopy(source: self, target: target, sourceToken: sourceToken, chunked: chunked, copyOrder: copyOrder)
-        copy.execute()
-    }
+  public func copyChanges(
+    to target: CloudContainer,
+    sourceToken: ZoneTokenStore,
+    chunked: Bool,
+    copyOrder: @escaping (([CloudZone]) -> [CloudZone]) = { return $0 })
+  {
+    Logging.log("Copy changes")
+    let copy = ContainerRecordsCopy(source: self, target: target, sourceToken: sourceToken, chunked: chunked, copyOrder: copyOrder)
+    copy.execute()
+  }
 }

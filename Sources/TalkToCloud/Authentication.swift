@@ -17,49 +17,49 @@
 import Foundation
 
 public struct Authentication {
-    private let onParams: (() -> [String: String])
-    private let onSignHeaders: ((Data, String) -> [String: String])
-    private let onMarkToken: ((URLResponse?) -> Void)
+  private let onParams: (() -> [String: String])
+  private let onSignHeaders: ((Data, String) -> [String: String])
+  private let onMarkToken: ((URLResponse?) -> Void)
     
-    public init(
-        onParams: @escaping (() -> [String: String]),
-        onSignHeaders: @escaping ((Data, String) -> [String: String]),
-        onMarkToken: @escaping ((URLResponse?) -> Void)
-    ) {
-        self.onParams = onParams
-        self.onSignHeaders = onSignHeaders
-        self.onMarkToken = onMarkToken
-    }
+  public init(
+    onParams: @escaping (() -> [String: String]),
+    onSignHeaders: @escaping ((Data, String) -> [String: String]),
+    onMarkToken: @escaping ((URLResponse?) -> Void)
+  ) {
+    self.onParams = onParams
+    self.onSignHeaders = onSignHeaders
+    self.onMarkToken = onMarkToken
+  }
     
-    internal func params() -> [String: String] {
-        onParams()
-    }
+  internal func params() -> [String: String] {
+    onParams()
+  }
     
-    internal func signedHeaders(for data: Data, query: String) -> [String: String] {
-        onSignHeaders(data, query)
-    }
+  internal func signedHeaders(for data: Data, query: String) -> [String: String] {
+    onSignHeaders(data, query)
+  }
     
-    internal func markToken(from response: URLResponse?) {
-        onMarkToken(response)
-    }
+  internal func markToken(from response: URLResponse?) {
+    onMarkToken(response)
+  }
 }
 
 extension Authentication {
-    public static func tokenAuth(with token: String, store: WebTokenStore) -> Authentication {
-        let tokenAuth = TokenAuthenticator(apiToken: token, tokenStore: store)
-        return Authentication(
-            onParams: { tokenAuth.params },
-            onSignHeaders: { tokenAuth.signedHeaders(for: $0, query: $1)},
-            onMarkToken: { tokenAuth.markToken(from: $0) }
-        )
-    }
+  public static func tokenAuth(with token: String, store: WebTokenStore) -> Authentication {
+    let tokenAuth = TokenAuthenticator(apiToken: token, tokenStore: store)
+    return Authentication(
+      onParams: { tokenAuth.params },
+      onSignHeaders: { tokenAuth.signedHeaders(for: $0, query: $1)},
+      onMarkToken: { tokenAuth.markToken(from: $0) }
+    )
+  }
     
-    public static func privateKeyAuth(with key: String, sign: SignData) -> Authentication {
-        let keyAuthentication = PrivateKeyAuthenticator(apiKeyID: key, sign: sign)
-        return Authentication(
-            onParams: { keyAuthentication.params },
-            onSignHeaders: { keyAuthentication.signedHeaders(for: $0, query: $1) },
-            onMarkToken: { _ in }
-        )
-    }
+  public static func privateKeyAuth(with key: String, sign: SignData) -> Authentication {
+    let keyAuthentication = PrivateKeyAuthenticator(apiKeyID: key, sign: sign)
+    return Authentication(
+      onParams: { keyAuthentication.params },
+      onSignHeaders: { keyAuthentication.signedHeaders(for: $0, query: $1) },
+      onMarkToken: { _ in }
+    )
+  }
 }

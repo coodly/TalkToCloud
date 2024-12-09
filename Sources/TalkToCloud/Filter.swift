@@ -17,67 +17,67 @@
 import Foundation
 
 public struct Filter: Codable {
-    let single: Raw.RecordsFilter?
-    let combined: [Raw.RecordsFilter]?
+  let single: Raw.RecordsFilter?
+  let combined: [Raw.RecordsFilter]?
     
-    public init(from decoder: Decoder) throws {
-        fatalError()
-    }
+  public init(from decoder: Decoder) throws {
+    fatalError()
+  }
     
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.singleValueContainer()
+  public func encode(to encoder: Encoder) throws {
+    var container = encoder.singleValueContainer()
         
-        if let single = single {
-            try container.encode(single)
-        } else if let combined = combined {
-            try container.encode(combined)
-        } else {
-            fatalError()
-        }
+    if let single = single {
+      try container.encode(single)
+    } else if let combined = combined {
+      try container.encode(combined)
+    } else {
+      fatalError()
     }
+  }
     
-    func json() -> AnyObject? {
-        let data = try! JSONEncoder().encode(self)
-        return try? JSONSerialization.jsonObject(with: data, options: []) as AnyObject
-    }
+  func json() -> AnyObject? {
+    let data = try! JSONEncoder().encode(self)
+    return try? JSONSerialization.jsonObject(with: data, options: []) as AnyObject
+  }
 }
 
 extension Filter {
-    internal init(single: Raw.RecordsFilter) {
-        self.single = single
-        self.combined = nil
-    }
+  internal init(single: Raw.RecordsFilter) {
+    self.single = single
+    self.combined = nil
+  }
     
-    internal init(combined: [Raw.RecordsFilter]) {
-        self.single = nil
-        self.combined = combined
-    }
+  internal init(combined: [Raw.RecordsFilter]) {
+    self.single = nil
+    self.combined = combined
+  }
 }
 
 extension Filter {
-    public static func equals<Value: Codable>(_ field: String, _ value: Value) -> Filter {
-        Filter(single: Raw.RecordsFilter(fieldName: field, comparator: .equals, fieldValue: .init(any: value)))
-    }
-    public static func notEquals<Value: Codable>(_ field: String, _ value: Value) -> Filter {
-        Filter(single: Raw.RecordsFilter(fieldName: field, comparator: .notEquals, fieldValue: .init(any: value)))
-    }
-    public static func `in`<Value: Codable>(_ field: String, _ value: Value) -> Filter {
-        Filter(single: Raw.RecordsFilter(fieldName: field, comparator: .in, fieldValue: .init(any: value)))
-    }
-    public static func lt<Value: Codable>(_ field: String, _ value: Value) -> Filter {
-        Filter(single: Raw.RecordsFilter(fieldName: field, comparator: .lessThan, fieldValue: .init(any: value)))
-    }
-    public static func lte<Value: Codable>(_ field: String, _ value: Value) -> Filter {
-        Filter(single: Raw.RecordsFilter(fieldName: field, comparator: .lessThanOrEquals, fieldValue: .init(any: value)))
-    }
-    public static func gt<Value: Codable>(_ field: String, _ value: Value) -> Filter {
-        Filter(single: Raw.RecordsFilter(fieldName: field, comparator: .greaterThan, fieldValue: .init(any: value)))
-    }
-    public static func gte<Value: Codable>(_ field: String, _ value: Value) -> Filter {
-        Filter(single: Raw.RecordsFilter(fieldName: field, comparator: .greaterThanOrEquals, fieldValue: .init(any: value)))
-    }
+  public static func equals<Value: Codable>(_ field: String, _ value: Value) -> Filter {
+    Filter(single: Raw.RecordsFilter(fieldName: field, comparator: .equals, fieldValue: .init(any: value)))
+  }
+  public static func notEquals<Value: Codable>(_ field: String, _ value: Value) -> Filter {
+    Filter(single: Raw.RecordsFilter(fieldName: field, comparator: .notEquals, fieldValue: .init(any: value)))
+  }
+  public static func `in`<Value: Codable>(_ field: String, _ value: Value) -> Filter {
+    Filter(single: Raw.RecordsFilter(fieldName: field, comparator: .in, fieldValue: .init(any: value)))
+  }
+  public static func lt<Value: Codable>(_ field: String, _ value: Value) -> Filter {
+    Filter(single: Raw.RecordsFilter(fieldName: field, comparator: .lessThan, fieldValue: .init(any: value)))
+  }
+  public static func lte<Value: Codable>(_ field: String, _ value: Value) -> Filter {
+    Filter(single: Raw.RecordsFilter(fieldName: field, comparator: .lessThanOrEquals, fieldValue: .init(any: value)))
+  }
+  public static func gt<Value: Codable>(_ field: String, _ value: Value) -> Filter {
+    Filter(single: Raw.RecordsFilter(fieldName: field, comparator: .greaterThan, fieldValue: .init(any: value)))
+  }
+  public static func gte<Value: Codable>(_ field: String, _ value: Value) -> Filter {
+    Filter(single: Raw.RecordsFilter(fieldName: field, comparator: .greaterThanOrEquals, fieldValue: .init(any: value)))
+  }
     
-    public static func and(_ filters: [Filter]) -> Filter {
-        Filter(combined: filters.compactMap(\.single))
-    }
+  public static func and(_ filters: [Filter]) -> Filter {
+    Filter(combined: filters.compactMap(\.single))
+  }
 }

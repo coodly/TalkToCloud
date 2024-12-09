@@ -17,50 +17,50 @@
 import Foundation
 
 public struct RecordsCursor {
-    internal let records: [Raw.Record]
-    internal let deleted: [Raw.RecordID]
-    internal let errors: [Raw.RecordError]
-    public let moreComing: Bool
-    public let syncToken: String?
-    public let continuation: (() -> Void)?
+  internal let records: [Raw.Record]
+  internal let deleted: [Raw.RecordID]
+  internal let errors: [Raw.RecordError]
+  public let moreComing: Bool
+  public let syncToken: String?
+  public let continuation: (() -> Void)?
 
-    public func records<T: CloudDecodable>(of type: T.Type) -> [T] {
-        Logging.verbose("Decode records named \(T.recordType)")
-        let named = records.filter({ $0.recordType == T.recordType })
-        Logging.verbose("Have \(named.count) records")
+  public func records<T: CloudDecodable>(of type: T.Type) -> [T] {
+    Logging.verbose("Decode records named \(T.recordType)")
+    let named = records.filter({ $0.recordType == T.recordType })
+    Logging.verbose("Have \(named.count) records")
         
-        let decoder = RecordDecoder()
+    let decoder = RecordDecoder()
         
-        var loaded = [T]()
+    var loaded = [T]()
         
-        for record in named {
-            do {
-                decoder.record = record
-                let decoded = try T(from: decoder)
-                loaded.append(decoded)
-            } catch {
-                Logging.error(error)
-                Logging.log(record.recordName)
-                fatalError()
-            }
-        }
+    for record in named {
+      do {
+        decoder.record = record
+        let decoded = try T(from: decoder)
+        loaded.append(decoded)
+      } catch {
+        Logging.error(error)
+        Logging.log(record.recordName)
+        fatalError()
+      }
+    }
         
-        return loaded
-    }
+    return loaded
+  }
     
-    public var recordErrors: [RecordError] {
-        errors.map(RecordError.init(raw:))
-    }
+  public var recordErrors: [RecordError] {
+    errors.map(RecordError.init(raw:))
+  }
     
-    public var deletions: [DeletedRecord] {
-        deleted.map(\.recordName).map(DeletedRecord.init(recordName:))
-    }
+  public var deletions: [DeletedRecord] {
+    deleted.map(\.recordName).map(DeletedRecord.init(recordName:))
+  }
     
-    internal var hasRecordsWithAssets: Bool {
-        records.map(\.containsAsset).filter({ $0 }).count > 0
-    }
+  internal var hasRecordsWithAssets: Bool {
+    records.map(\.containsAsset).filter({ $0 }).count > 0
+  }
     
-    public var numberOfRecords: Int {
-        records.count
-    }
+  public var numberOfRecords: Int {
+    records.count
+  }
 }

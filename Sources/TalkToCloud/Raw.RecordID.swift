@@ -17,7 +17,7 @@
 import Foundation
 
 extension Raw {
-    internal struct RecordID: Codable {
-        let recordName: String
-    }
+  internal struct RecordID: Codable {
+    let recordName: String
+  }
 }

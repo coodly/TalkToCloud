@@ -17,5 +17,5 @@
 import Foundation
 
 public struct User: Decodable {
-    let userRecordName: String
+  let userRecordName: String
 }

@@ -17,5 +17,5 @@
 import Foundation
 
 public protocol APIKeyConsumer {
-    var apiKeyID: String! { get set }
+  var apiKeyID: String! { get set }
 }

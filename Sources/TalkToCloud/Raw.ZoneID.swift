@@ -17,17 +17,17 @@
 import Foundation
 
 extension Raw {
-    internal struct ZoneID: Codable {
-        let zoneName: String
-        let ownerRecordName: String?
-        let zoneType: String?
-    }
+  internal struct ZoneID: Codable {
+    let zoneName: String
+    let ownerRecordName: String?
+    let zoneType: String?
+  }
 }
 
 extension Raw.ZoneID {
-    internal init(name: String) {
-        zoneName = name
-        ownerRecordName = nil
-        zoneType = nil
-    }
+  internal init(name: String) {
+    zoneName = name
+    ownerRecordName = nil
+    zoneType = nil
+  }
 }

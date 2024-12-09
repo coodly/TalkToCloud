@@ -18,55 +18,55 @@ import Foundation
 import Crypto
 
 public class PrivateKeyAuthenticator: Authenticator {
-    private lazy var dateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.timeZone = TimeZone(abbreviation: "GMT")
-        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
-        return formatter
-    }()
+  private lazy var dateFormatter: DateFormatter = {
+    let formatter = DateFormatter()
+    formatter.locale = Locale(identifier: "en_US_POSIX")
+    formatter.timeZone = TimeZone(abbreviation: "GMT")
+    formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+    return formatter
+  }()
     
-    public var params: [String : String] {
-        [:]
-    }
+  public var params: [String : String] {
+    [:]
+  }
     
-    private let apiKeyID: String
-    private let sign: SignData
-    public init(apiKeyID: String, sign: SignData) {
-        self.apiKeyID = apiKeyID
-        self.sign = sign
-    }
+  private let apiKeyID: String
+  private let sign: SignData
+  public init(apiKeyID: String, sign: SignData) {
+    self.apiKeyID = apiKeyID
+    self.sign = sign
+  }
     
-    public func signedHeaders(for data: Data, query: String) -> [String: String] {
-        let dateString = curretDateString()
-        return [
-            "X-Apple-CloudKit-Request-KeyID": apiKeyID,
-            "X-Apple-CloudKit-Request-ISO8601Date": dateString,
-            "X-Apple-CloudKit-Request-SignatureV1": calculateSignature(dateString: dateString, body: data, fullQueryPath: query)
-        ]
-    }
+  public func signedHeaders(for data: Data, query: String) -> [String: String] {
+    let dateString = curretDateString()
+    return [
+      "X-Apple-CloudKit-Request-KeyID": apiKeyID,
+      "X-Apple-CloudKit-Request-ISO8601Date": dateString,
+      "X-Apple-CloudKit-Request-SignatureV1": calculateSignature(dateString: dateString, body: data, fullQueryPath: query)
+    ]
+  }
     
-    private func curretDateString() -> String {
-        return dateFormatter.string(from: Date()).appending("Z")
-    }
+  private func curretDateString() -> String {
+    return dateFormatter.string(from: Date()).appending("Z")
+  }
     
-    private func calculateSignature(dateString: String, body: Data, fullQueryPath: String) -> String {
-        let base = "\(dateString):\(hash(of: body)):\(fullQueryPath)"
+  private func calculateSignature(dateString: String, body: Data, fullQueryPath: String) -> String {
+    let base = "\(dateString):\(hash(of: body)):\(fullQueryPath)"
         
-        Logging.log("Base: \(base)")
+    Logging.log("Base: \(base)")
         
-        let sig = sign.sign(base.data(using: .utf8)!)
-        Logging.log("Signature: \(sig)")
+    let sig = sign.sign(base.data(using: .utf8)!)
+    Logging.log("Signature: \(sig)")
         
-        return sig
-    }
+    return sig
+  }
 
-    private func hash(of body: Data) -> String {
-        return sha256(data: body)
-    }
+  private func hash(of body: Data) -> String {
+    return sha256(data: body)
+  }
     
-    private func sha256(data : Data) -> String {
-        let hashed = SHA256.hash(data: data)
-        return Data(hashed).base64EncodedString()
-    }
+  private func sha256(data : Data) -> String {
+    let hashed = SHA256.hash(data: data)
+    return Data(hashed).base64EncodedString()
+  }
 }
