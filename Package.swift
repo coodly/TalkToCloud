@@ -15,8 +15,8 @@ let package = Package(
             targets: ["TalkToCloud"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/apple/swift-crypto.git", from: "2.5.0"),
-        .package(url: "https://github.com/pointfreeco/swift-custom-dump.git", from: "0.10.2")
+        .package(url: "https://github.com/apple/swift-crypto.git", from: "3.10.0"),
+        .package(url: "https://github.com/pointfreeco/swift-custom-dump.git", from: "1.3.3")
     ],
     targets: [
         .target(
