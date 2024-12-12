@@ -66,44 +66,46 @@ internal class Request<T: Decodable> {
   }
     
   private func execute(_ method: Method, to path: String, body: Raw.Request? = nil, in database: CloudDatabase = .public) {
-    let fullQueryPath = "\(variables.container)/\(variables.env.rawValue)/\(database.rawValue)\(path)"
-    var components = URLComponents(url: baseURL, resolvingAgainstBaseURL: true)!
-    components.path = components.path.appending(fullQueryPath)
-        
-    var url = components.url!
-        
-    for (name, value) in variables.auth.params {
-      url = url.appending(param: name, value: value)
-    }
+    fatalError()
+    
+    //let fullQueryPath = "\(variables.container)/\(variables.env.rawValue)/\(database.rawValue)\(path)"
+    //var components = URLComponents(url: baseURL, resolvingAgainstBaseURL: true)!
+    //components.path = components.path.appending(fullQueryPath)
+    //
+    //var url = components.url!
+    //
+    //for (name, value) in variables.auth.params {
+    //  url = url.appending(param: name, value: value)
+    //}
 
-    Logging.log("\(method.rawValue) to \(url.absoluteString)")
-        
-    let request = NSMutableURLRequest(url: url)
-    request.httpMethod = method.rawValue
-        
-    request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        
-    if let body = body {
-      do {
-        let data = try encoder.encode(body)
-        request.httpBody = data
-         
-        let additionalHeaders = variables.auth.signedHeaders(for: data, query: url.path)
-        for (name, value) in additionalHeaders {
-          request.addValue(value, forHTTPHeaderField: name)
-        }
-                
-        if let string = String(data: data, encoding: .utf8) {
-          Logging.verbose("Body:")
-          Logging.verbose(string)
-        }
-      } catch {
-        Logging.error("Encode body error: \(error)")
-        fatalError()
-      }
-    }
-                
-    variables.fetch.fetch(request as URLRequest, completion: handle(_:response:error:))
+    //Logging.log("\(method.rawValue) to \(url.absoluteString)")
+    //
+    //let request = NSMutableURLRequest(url: url)
+    //request.httpMethod = method.rawValue
+    //
+    //request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+    //
+    //if let body = body {
+    //  do {
+    //    let data = try encoder.encode(body)
+    //    request.httpBody = data
+    //
+    //    let additionalHeaders = variables.auth.signedHeaders(for: data, query: url.path)
+    //    for (name, value) in additionalHeaders {
+    //      request.addValue(value, forHTTPHeaderField: name)
+    //    }
+    //
+    //    if let string = String(data: data, encoding: .utf8) {
+    //      Logging.verbose("Body:")
+    //      Logging.verbose(string)
+    //    }
+    //  } catch {
+    //    Logging.error("Encode body error: \(error)")
+    //    fatalError()
+    //  }
+    //}
+    //
+    //variables.fetch.fetch(request as URLRequest, completion: handle(_:response:error:))
   }
     
   private func handle(_ data: Data?, response: URLResponse?, error: Error?) {

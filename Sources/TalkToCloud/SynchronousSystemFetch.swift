@@ -43,6 +43,8 @@ extension URLSession {
 
 extension NetworkFetch {
   public static let synchronousSystemFetch = NetworkFetch(
-    onFetch: URLSession.shared.synchronousDataWithRequest(request:completionHandler:)
+    onFetch: { _ in
+      fatalError()
+    }
   )
 }

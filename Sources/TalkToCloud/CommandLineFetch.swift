@@ -21,12 +21,14 @@ import Foundation
 
 extension NetworkFetch {
   public static let commandLineFetch = NetworkFetch(
-    onFetch: {
-      request, completion in
+    onFetch: { _ in
+      fatalError()
+      
+      //request, completion in
 
-      Logging.verbose("\(request.httpMethod ?? "-") to \(request.url?.absoluteString ?? "-")")
-      let curl = CURLRequest(request: request)
-      curl.execute(completion: completion)
+      //Logging.verbose("\(request.httpMethod ?? "-") to \(request.url?.absoluteString ?? "-")")
+      //let curl = CURLRequest(request: request)
+      //curl.execute(completion: completion)
     }
   )
 }

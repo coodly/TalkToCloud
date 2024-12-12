@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Coodly LLC
+ * Copyright 2024 Coodly LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,20 +15,11 @@
  */
 
 import Foundation
-#if canImport(FoundationNetworking)
-  import FoundationNetworking
-#endif
 
-public typealias NetworkFetchClosure = (Data?, URLResponse?, Error?) -> ()
-
-public struct NetworkFetch {
-  private let onFetch: @Sendable (URLRequest) async throws -> (Data, URLResponse)
-
-  public init(onFetch: @escaping @Sendable (URLRequest) async throws -> (Data, URLResponse)) {
-    self.onFetch = onFetch
-  }
-
-  public func fetch(_ request: URLRequest) async throws -> (Data, URLResponse) {
-    try await onFetch(request)
-  }
+extension NetworkFetch {
+  public static let asyncSystemFetch = NetworkFetch(
+    onFetch: { request in
+      try await URLSession.shared.data(for: request)
+    }
+  )
 }

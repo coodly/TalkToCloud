@@ -310,11 +310,13 @@ internal class ContainerRecordsCopy {
             
       let downloadPath = field.assetDownload!.downloadURL!.replacingOccurrences(of: "${f}", with: "image.jpg")
       var data: Data?
-      target.fetch.fetch(URLRequest(url: URL(string: downloadPath)!)) {
-        loaded, _, _ in
-                
-        data = loaded
-      }
+      fatalError()
+      
+      //target.fetch.fetch(URLRequest(url: URL(string: downloadPath)!)) {
+      //  loaded, _, _ in
+      //
+      //  data = loaded
+      //}
             
       let upload = AssetUpload(recordName: inTarget.recordName, recordType: inTarget.recordType, fieldName: name, data: data!, zone: zone)
       let fileDefinition = target.upload(asset: upload, in: .private)

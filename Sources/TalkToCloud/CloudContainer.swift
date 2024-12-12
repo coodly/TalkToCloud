@@ -215,15 +215,16 @@ public class CloudContainer {
 
     let cursor = Cursor<T>(path: path, data: data, handler: nil, continuation: nil)
 
-    fetch.fetch(request as URLRequest) {
-      data, response, error in
-                        
-      if let token = variables.auth as? TokenAuthenticator {
-        token.markToken(from: response)
-      }
+    fatalError()
+    //fetch.fetch(request as URLRequest) {
+    //  data, response, error in
+    //
+    //  if let token = variables.auth as? TokenAuthenticator {
+    //    token.markToken(from: response)
+    //  }
 
-      self.handleResult(data: data, response: response, error: error, cursor: cursor, completion: completion)
-    }
+    //  self.handleResult(data: data, response: response, error: error, cursor: cursor, completion: completion)
+    //}
   }
     
   private func continueWith<T>(cursor: Cursor<T>) {
@@ -388,11 +389,12 @@ extension CloudContainer {
       Logging.log("\t\(key): \(value)")
     }
         
-    fetch.fetch(request as URLRequest) {
-      data, response, error in
-            
-      self.handleCodedResult(data: data, response: response, error: error, completion: completion)
-    }
+    fatalError()
+    //fetch.fetch(request as URLRequest) {
+    //  data, response, error in
+    //
+    //  self.handleCodedResult(data: data, response: response, error: error, completion: completion)
+    //}
   }
     
   private func handleCodedResult<R: Decodable>(data: Data?, response: URLResponse?, error: Error?, completion: @escaping ((CloudCodedResult<R>) -> ())) {
@@ -439,35 +441,37 @@ private extension CloudContainer {
     request.httpBody = data
     request.setValue("application/octet-stream", forHTTPHeaderField: "Content-Type")
         
-    fetch.fetch(request as URLRequest) {
-      data, response, error in
-            
-      var cloudError: CloudError? = nil
-      var result: R? = nil
-            
-      defer {
-        completion(CloudCodedResult(result: result, error: cloudError, continuation: nil))
-      }
+    fatalError()
+    
+    //fetch.fetch(request as URLRequest) {
+    //  data, response, error in
+    //
+    //  var cloudError: CloudError? = nil
+    //  var result: R? = nil
+    //
+    //  defer {
+    //    completion(CloudCodedResult(result: result, error: cloudError, continuation: nil))
+    //  }
 
-      if let error = error {
-        Logging.log(error)
-        cloudError = .network(error)
-        return
-      }
+    //  if let error = error {
+    //    Logging.log(error)
+    //    cloudError = .network(error)
+    //    return
+    //  }
 
-      guard let received = data else {
-        Logging.log("No response data")
-        cloudError = .noData
-        return
-      }
+    //  guard let received = data else {
+    //    Logging.log("No response data")
+    //    cloudError = .noData
+    //    return
+    //  }
 
-      do {
-        result = try self.decoder.decode(R.self, from: received)
-      } catch {
-        Logging.error("Response not decoded: \(error)")
-        cloudError = .decode(error)
-      }
-    }
+    //  do {
+    //    result = try self.decoder.decode(R.self, from: received)
+    //  } catch {
+    //    Logging.error("Response not decoded: \(error)")
+    //    cloudError = .decode(error)
+    //  }
+    //}
   }
 }
 
