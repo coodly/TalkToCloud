@@ -19,7 +19,7 @@ import Foundation
   import FoundationNetworking
 #endif
 
-internal struct Variables {
+internal struct Variables: Sendable {
   let container: String
   let env: Environment
   let auth: Authenticator

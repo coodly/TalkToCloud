@@ -16,7 +16,7 @@
 
 import Foundation
 
-public enum CloudDatabase: String {
+public enum CloudDatabase: String, Sendable {
   case `public` = "public"
   case `private` = "private"
   case shared = "shared"

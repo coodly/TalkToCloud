@@ -21,7 +21,7 @@ import Foundation
 
 public typealias NetworkFetchClosure = (Data?, URLResponse?, Error?) -> ()
 
-public struct NetworkFetch {
+public struct NetworkFetch: Sendable {
   private let onFetch: @Sendable (URLRequest) async throws -> (Data, URLResponse)
 
   public init(onFetch: @escaping @Sendable (URLRequest) async throws -> (Data, URLResponse)) {
