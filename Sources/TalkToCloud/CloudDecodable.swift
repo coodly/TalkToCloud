@@ -23,3 +23,9 @@ public protocol CloudDecodable: Decodable {
   var recordChangeTag: String { get set }
   var deleted: Bool { get set }
 }
+
+extension CloudDecodable {
+  public func reference(in zone: Zone, action: ReferenceAction = .none) -> CloudReference {
+    CloudReference(recordName: recordName, action: action, zoneID: Raw.ZoneID(name: zone.name))
+  }
+}

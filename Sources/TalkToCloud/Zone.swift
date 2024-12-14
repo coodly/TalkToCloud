@@ -24,7 +24,7 @@ public struct Zone: Sendable {
   private let decoder = JSONDecoder()
   private let encoder = JSONEncoder()
   
-  private let name: String
+  internal let name: String
   private let database: CloudDatabase
   private let variables: Variables
   internal init(name: String, database: CloudDatabase, variables: Variables) {

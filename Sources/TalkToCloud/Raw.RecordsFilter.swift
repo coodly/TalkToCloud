@@ -50,6 +50,8 @@ extension Raw {
           try container.encode(value, forKey: .value)
         } else if let value = date {
           try container.encode(value.milliseconds(), forKey: .value)
+        } else if let reference {
+          try container.encode(reference, forKey: .value)
         } else {
           dump(self)
           fatalError()
@@ -63,6 +65,7 @@ extension Raw {
       let int64: Int64?
       let int64List: [Int64]?
       let date: Date?
+      let reference: CloudReference?
 
       enum CodingKeys: String, CodingKey {
         case value
@@ -93,5 +96,7 @@ extension Raw.RecordsFilter.Value {
     } else {
       int64List = any as? [Int64]
     }
+    
+    self.reference = any as? CloudReference
   }
 }
