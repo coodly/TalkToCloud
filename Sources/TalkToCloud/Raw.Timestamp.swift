@@ -17,7 +17,7 @@
 import Foundation
 
 extension Raw {
-  internal struct Timestamp: Codable {
+  internal struct Timestamp: Codable, Sendable {
     let timestamp: Double
 
     internal var date: Date {

@@ -139,37 +139,38 @@ public class CloudContainer {
   }
     
   public func changes(in zone: CloudZone, since token: String? = nil, completion: @escaping ((Result<RecordsCursor, Error>) -> Void)) {
-    let rawZone = zone.raw
-    let request = RecordZoneChangesRequest(zone: rawZone, token: token, variables: variables)
-    request.perform() {
-      result in
-            
-      switch result {
-      case .success(let changes):
-        guard let zoneChanges = changes.changes(in: rawZone) else {
-          completion(.failure(CloudError.noChanges))
-          return
-        }
-                
-        let records = zoneChanges.received
-        let deleted = zoneChanges.deleted
-        Logging.verbose("Records: \(records.count)")
-        Logging.verbose("Deleted: \(deleted.count)")
-        let moreComing = zoneChanges.moreComing
-        let continuation: (() -> Void)?
-        if moreComing {
-          continuation = {
-            self.changes(in: zone, since: zoneChanges.syncToken, completion: completion)
-          }
-        } else {
-          continuation = nil
-        }
-        let cursor = RecordsCursor(records: records, deleted: deleted, errors: [], moreComing: zoneChanges.moreComing, syncToken: zoneChanges.syncToken, continuation: continuation)
-        completion(.success(cursor))
-      case .failure(let error):
-        completion(.failure(error))
-      }
-    }
+    fatalError()
+    //let rawZone = zone.raw
+    //let request = RecordZoneChangesRequest(zone: rawZone, token: token, variables: variables)
+    //request.perform() {
+    //  result in
+    //
+    //  switch result {
+    //  case .success(let changes):
+    //    guard let zoneChanges = changes.changes(in: rawZone) else {
+    //      completion(.failure(CloudError.noChanges))
+    //      return
+    //    }
+    //
+    //    let records = zoneChanges.received
+    //    let deleted = zoneChanges.deleted
+    //    Logging.verbose("Records: \(records.count)")
+    //    Logging.verbose("Deleted: \(deleted.count)")
+    //    let moreComing = zoneChanges.moreComing
+    //    let continuation: (() -> Void)?
+    //    if moreComing {
+    //      continuation = {
+    //        self.changes(in: zone, since: zoneChanges.syncToken, completion: completion)
+    //      }
+    //    } else {
+    //      continuation = nil
+    //    }
+    //    let cursor = RecordsCursor(records: records, deleted: deleted, errors: [], moreComing: zoneChanges.moreComing, syncToken: zoneChanges.syncToken, continuation: continuation)
+    //    completion(.success(cursor))
+    //  case .failure(let error):
+    //    completion(.failure(error))
+    //  }
+    //}
   }
         
   private func send<T>(body: [String: AnyObject], to path: String, in database: CloudDatabase, completion: @escaping ((CloudResult<T>) -> ())) {
@@ -308,41 +309,43 @@ public class CloudContainer {
 
 extension CloudContainer {
   internal func codedLookup(of names: [String], zone: CloudZone, in database: CloudDatabase, completion: @escaping ((Result<RecordsCursor, Error>) -> Void)) {
-    let body = Raw.LookupRequest(records: names.map({ Raw.LookupName(recordName: $0) }), zoneID: zone.zoneID)
-        
-    let handler: ((CloudCodedResult<Raw.Response>) -> Void) = {
-      result in
+    fatalError()
+    //let body = Raw.LookupRequest(records: names.map({ Raw.LookupName(recordName: $0) }), zoneID: zone.zoneID)
+    //
+    //let handler: ((CloudCodedResult<Raw.Response>) -> Void) = {
+    //  result in
 
-      if let error = result.error {
-        completion(.failure(error))
-      } else if let response = result.result {
-        let records = response.received
-        let errors = response.errors
-                
-        let cursor = RecordsCursor(records: records, deleted: [], errors: errors, moreComing: false, syncToken: "", continuation: nil)
-        completion(.success(cursor))
-      }
-    }
-        
-    sendCoded(body: body, to: "/records/lookup", in: database, completion: handler)
+    //  if let error = result.error {
+    //    completion(.failure(error))
+    //  } else if let response = result.result {
+    //    let records = response.received
+    //    let errors = response.errors
+    //
+    //    let cursor = RecordsCursor(records: records, deleted: [], errors: errors, moreComing: false, syncToken: "", continuation: nil)
+    //    completion(.success(cursor))
+    //  }
+    //}
+    //
+    //sendCoded(body: body, to: "/records/lookup", in: database, completion: handler)
   }
     
   internal func recordsModify(body: Raw.Request, in database: CloudDatabase, completion: @escaping ((Result<RecordsCursor, Error>) -> Void)) {
-    let handler: ((CloudCodedResult<Raw.Response>) -> Void) = {
-      result in
-            
-      if let error = result.error {
-        completion(.failure(error))
-      } else if let response = result.result {
-        let records = response.received
-        let errors = response.errors
-                
-        let cursor = RecordsCursor(records: records, deleted: [], errors: errors, moreComing: false, syncToken: "", continuation: nil)
-        completion(.success(cursor))
-      }
-    }
-        
-    sendCoded(body: body, to: "/records/modify", in: database, completion: handler)
+    fatalError()
+    //let handler: ((CloudCodedResult<Raw.Response>) -> Void) = {
+    //  result in
+    //
+    //  if let error = result.error {
+    //    completion(.failure(error))
+    //  } else if let response = result.result {
+    //    let records = response.received
+    //    let errors = response.errors
+    //
+    //    let cursor = RecordsCursor(records: records, deleted: [], errors: errors, moreComing: false, syncToken: "", continuation: nil)
+    //    completion(.success(cursor))
+    //  }
+    //}
+    //
+    //sendCoded(body: body, to: "/records/modify", in: database, completion: handler)
   }
     
   private func sendCoded<B: Encodable, R: Decodable>(body: B, to path: String, in database: CloudDatabase, completion: @escaping ((CloudCodedResult<R>) -> Void)) {

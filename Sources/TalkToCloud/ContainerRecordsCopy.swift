@@ -199,7 +199,8 @@ internal class ContainerRecordsCopy {
       return
     }
         
-    cursor.continuation?()
+    fatalError()
+    //cursor.continuation?()
   }
     
   private func write(records: [Raw.Record], deletions: [Raw.RecordID], into zone: CloudZone, completion: @escaping ((Result<Bool, Error>) -> Void)) {

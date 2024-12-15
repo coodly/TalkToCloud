@@ -17,7 +17,7 @@
 import Foundation
 
 extension Raw {
-  internal struct Record: Codable {
+  internal struct Record: Codable, Sendable {
     let recordName: String
     let recordType: String
     let recordChangeTag: String

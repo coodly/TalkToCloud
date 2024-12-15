@@ -16,13 +16,13 @@
 
 import Foundation
 
-public struct RecordsCursor {
+public struct RecordsCursor: Sendable {
   internal let records: [Raw.Record]
   internal let deleted: [Raw.RecordID]
   internal let errors: [Raw.RecordError]
   public let moreComing: Bool
   public let syncToken: String?
-  public let continuation: (() -> Void)?
+  public let nextPage: @Sendable () async throws -> RecordsCursor?
 
   public func records<T: CloudDecodable>(of type: T.Type) -> [T] {
     Logging.verbose("Decode records named \(T.recordType)")

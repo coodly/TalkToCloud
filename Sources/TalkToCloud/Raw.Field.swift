@@ -17,7 +17,7 @@
 import Foundation
 
 extension Raw {
-  internal struct Field: Codable {
+  internal struct Field: Codable, Sendable {
     enum ValueType: String, Codable {
       case double = "DOUBLE"
       case doubleList = "DOUBLE_LIST"

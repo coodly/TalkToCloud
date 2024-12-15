@@ -78,7 +78,7 @@ public struct Zone: Sendable {
             
       switch result {
       case .success(let response):
-        let cursor = RecordsCursor(records: response.received, deleted: response.deleted, errors: response.errors, moreComing: false, syncToken: nil, continuation: nil)
+        let cursor = RecordsCursor(records: response.received, deleted: response.deleted, errors: response.errors, moreComing: false, syncToken: nil, nextPage: { nil })
         completion(.success(cursor))
       case .failure(let error):
         completion(.failure(error))
@@ -99,7 +99,7 @@ public struct Zone: Sendable {
             
       switch result {
       case .success(let response):
-        let cursor = RecordsCursor(records: response.received, deleted: response.deleted, errors: response.errors, moreComing: false, syncToken: nil, continuation: nil)
+        let cursor = RecordsCursor(records: response.received, deleted: response.deleted, errors: response.errors, moreComing: false, syncToken: nil, nextPage: { nil })
         completion(.success(cursor))
       case .failure(let error):
         completion(.failure(error))
@@ -137,41 +137,42 @@ public struct Zone: Sendable {
   //  }
   //}
     
-  private func nextPage(with request: Raw.Request, continuation: String, completion: @escaping ((Result<RecordsCursor, Error>) -> Void)) {
+  private func nextPage(with request: Raw.Request, continuation: String) async throws -> RecordsCursor {
     Logging.log("Next page")
     let withContinuation = request.with(continuationMarker: continuation)
-    performRequest(with: withContinuation, completion: completion)
+    return try await post(to: "/records/query", body: withContinuation)
   }
     
   private func performRequest(with body: Raw.Request, completion: @escaping ((Result<RecordsCursor, Error>) -> Void)) {
-    let request = QueryRecordsRequest(body: body, database: database, variables: variables)
-    request.perform() {
-      result in
-            
-      switch result {
-      case .success(let response):
-        let continuation: (() -> Void)?
-        if let token = response.continuationMarker {
-          continuation = {
-            self.nextPage(with: body, continuation: token, completion: completion)
-          }
-        } else {
-          continuation = nil
-        }
-                
-        let cursor = RecordsCursor(
-          records: response.received,
-          deleted: [],
-          errors: [],
-          moreComing: response.continuationMarker != nil,
-          syncToken: nil,
-          continuation: continuation
-        )
-        completion(.success(cursor))
-      case .failure(let error):
-        completion(.failure(error))
-      }
-    }
+    fatalError()
+    //let request = QueryRecordsRequest(body: body, database: database, variables: variables)
+    //request.perform() {
+    //  result in
+    //
+    //  switch result {
+    //  case .success(let response):
+    //    let continuation: (() -> Void)?
+    //    if let token = response.continuationMarker {
+    //      continuation = {
+    //        self.nextPage(with: body, continuation: token, completion: completion)
+    //      }
+    //    } else {
+    //      continuation = nil
+    //    }
+    //
+    //    let cursor = RecordsCursor(
+    //      records: response.received,
+    //      deleted: [],
+    //      errors: [],
+    //      moreComing: response.continuationMarker != nil,
+    //      syncToken: nil,
+    //      continuation: continuation
+    //    )
+    //    completion(.success(cursor))
+    //  case .failure(let error):
+    //    completion(.failure(error))
+    //  }
+    //}
   }
   
   func get(path: String, parameters: [String: String]) async throws -> RecordsCursor {
@@ -240,14 +241,13 @@ public struct Zone: Sendable {
     let result: Result<Raw.Response, any Error> = decodeValue(from: data)
     switch result {
     case .success(let response):
-      let continuation: (() -> Void)?
+      let continuation: @Sendable () async throws -> RecordsCursor?
       if let token = response.continuationMarker {
         continuation = {
-          fatalError()
-          //self.nextPage(with: body, continuation: token, completion: completion)
+          try await self.nextPage(with: body!, continuation: token)
         }
       } else {
-        continuation = nil
+        continuation = { nil }
       }
               
       let cursor = RecordsCursor(
@@ -256,7 +256,7 @@ public struct Zone: Sendable {
         errors: [],
         moreComing: response.continuationMarker != nil,
         syncToken: nil,
-        continuation: continuation
+        nextPage: continuation
       )
       return cursor
     case .failure(let error):
