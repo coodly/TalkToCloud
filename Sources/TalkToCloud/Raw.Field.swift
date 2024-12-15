@@ -152,8 +152,11 @@ extension Raw.Field {
     } else if let value = value as? [Date] {
       self.type = .timestampList
       self.timestampList = value.map({ $0.milliseconds() })
+    } else if let value = value as? CloudReference {
+      self.type = .reference
+      self.reference = value
     } else {
-      fatalError()
+      fatalError(String(describing: Swift.type(of: value)))
     }
   }
 }
