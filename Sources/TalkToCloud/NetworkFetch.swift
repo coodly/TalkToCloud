@@ -19,8 +19,6 @@ import Foundation
   import FoundationNetworking
 #endif
 
-public typealias NetworkFetchClosure = (Data?, URLResponse?, Error?) -> ()
-
 public struct NetworkFetch: Sendable {
   private let onFetch: @Sendable (URLRequest) async throws -> (Data, URLResponse)
 

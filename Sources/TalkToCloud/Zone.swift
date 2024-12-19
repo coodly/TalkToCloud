@@ -90,6 +90,13 @@ public struct Zone: Sendable {
     delete(names: records.map(\.recordName), atomic: atomic, completion: completion)
   }
 
+  public func delete(names: [String], atomic: Bool? = nil) async throws -> RecordsCursor {
+    let operations = names.map(Raw.Operation.init(deleteName:))
+    let request = Raw.Request(zoneID: Raw.ZoneID(name: name), operations: operations).with(atomic: atomic)
+    
+    return try await post(to: "/records/modify", body: request)
+  }
+  
   public func delete(names: [String], atomic: Bool? = nil, completion: @escaping ((Result<RecordsCursor, Error>) -> Void)) {
     let operations = names.map(Raw.Operation.init(deleteName:))
     let request = Raw.Request(zoneID: Raw.ZoneID(name: name), operations: operations).with(atomic: atomic)
