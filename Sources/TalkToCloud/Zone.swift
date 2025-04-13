@@ -259,8 +259,8 @@ public struct Zone: Sendable {
               
       let cursor = RecordsCursor(
         records: response.received,
-        deleted: [],
-        errors: [],
+        deleted: response.deleted,
+        errors: response.errors,
         moreComing: response.continuationMarker != nil,
         syncToken: nil,
         nextPage: continuation
