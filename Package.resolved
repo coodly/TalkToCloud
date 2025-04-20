@@ -1,12 +1,21 @@
 {
   "pins" : [
     {
+      "identity" : "swift-asn1",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-asn1.git",
+      "state" : {
+        "revision" : "ae33e5941bb88d88538d0a6b19ca0b01e6c76dcf",
+        "version" : "1.3.1"
+      }
+    },
+    {
       "identity" : "swift-crypto",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-crypto.git",
       "state" : {
-        "revision" : "33a20e650c33f6d72d822d558333f2085effa3dc",
-        "version" : "2.5.0"
+        "revision" : "e8d6eba1fef23ae5b359c46b03f7d94be2f41fed",
+        "version" : "3.12.3"
       }
     },
     {
@@ -14,8 +23,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-custom-dump.git",
       "state" : {
-        "revision" : "84b30e1af72e0ffe6dfbfe39d53b8173caacf224",
-        "version" : "0.10.2"
+        "revision" : "82645ec760917961cfa08c9c0c7104a57a0fa4b1",
+        "version" : "1.3.3"
       }
     },
     {
@@ -23,8 +32,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/xctest-dynamic-overlay",
       "state" : {
-        "revision" : "50a70a9d3583fe228ce672e8923010c8df2deddd",
-        "version" : "0.2.1"
+        "revision" : "39de59b2d47f7ef3ca88a039dff3084688fe27f4",
+        "version" : "1.5.2"
       }
     }
   ],

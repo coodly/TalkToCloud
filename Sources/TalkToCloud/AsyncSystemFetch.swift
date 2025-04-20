@@ -15,6 +15,9 @@
  */
 
 import Foundation
+#if canImport(FoundationNetworking)
+  import FoundationNetworking
+#endif
 
 extension NetworkFetch {
   public static let asyncSystemFetch = NetworkFetch(
