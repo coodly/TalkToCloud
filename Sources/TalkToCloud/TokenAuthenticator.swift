@@ -54,6 +54,9 @@ import Foundation
   import FoundationNetworking
 
   public class TokenAuthenticator: Authenticator {
+    public init(apiToken: String, tokenStore: WebTokenStore) {
+    }
+
     public var params: [String : String] {
       fatalError()
     }
