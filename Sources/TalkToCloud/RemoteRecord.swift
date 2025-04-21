@@ -18,7 +18,7 @@ import Foundation
 
 let ReservedFields = ["recordName", "recordChangeTag", "proposedName"]
 
-enum OperationType: String, Codable {
+enum OperationType: String, Codable, Sendable {
   case create = "create"
   case update = "update"
   case delete = "delete"

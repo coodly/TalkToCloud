@@ -17,7 +17,7 @@
 import Foundation
 
 extension Raw {
-  internal struct Request: Encodable {
+  internal struct Request: Encodable, Sendable {
     private var zoneID: Raw.ZoneID?
     private var zones: [Raw.Zone]?
     private var operations: [Raw.Operation]?
@@ -27,6 +27,7 @@ extension Raw {
     private var atomic: Bool?
     private var continuationMarker: String?
     private var records: [Raw.Lookup]?
+    private var tokens: [AssetUploadToken]?
 
     internal func query(in zones: [Raw.Zone]) -> Raw.Request {
       var modified = self
@@ -76,6 +77,13 @@ extension Raw.Request {
     self.query = query
     self.resultsLimit = nil
     self.desiredKeys = nil
+  }
+}
+
+extension Raw.Request {
+  internal init(asset: AssetUpload) {
+    zoneID = asset.zone.zoneID
+    tokens = [AssetUploadToken(recordName: asset.recordName, recordType: asset.recordType, fieldName: asset.fieldName)]
   }
 }
 

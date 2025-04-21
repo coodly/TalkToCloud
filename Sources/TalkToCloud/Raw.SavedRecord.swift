@@ -17,7 +17,7 @@
 import Foundation
 
 extension Raw {
-  internal struct SavedRecord: Encodable {
+  internal struct SavedRecord: Encodable, Sendable {
     let recordName: String
     let recordType: String
     let recordChangeTag: String?

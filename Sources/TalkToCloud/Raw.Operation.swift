@@ -17,7 +17,7 @@
 import Foundation
 
 extension Raw {
-  internal struct Operation: Encodable {
+  internal struct Operation: Encodable, Sendable {
     let operationType: OperationType
     var zone: Raw.Zone?
     var record: Raw.SavedRecord?

@@ -146,13 +146,55 @@ public struct Zone: Sendable {
   //    }
   //  }
   //}
-    
+      
   private func nextPage(with request: Raw.Request, continuation: String) async throws -> RecordsCursor {
     Logging.log("Next page")
     let withContinuation = request.with(continuationMarker: continuation)
     return try await post(to: "/records/query", body: withContinuation)
   }
+  
+  public func upload<Record: CloudDecodable>(asset: AssetUpload, attachedTo: Record) async throws -> RecordsCursor {
+    guard let target = try await createAssetRecord(asset: asset) else {
+      throw ZoneError.noUploadTargetCreated
+    }
     
+    let assetDefinition = try await uploadAssetData(asset.data, with: target)
+    dump(asset)
+    var rawRecord = Raw.SavedRecord(
+      recordName: attachedTo.recordName,
+      recordType: Record.recordType,
+      recordChangeTag: attachedTo.recordChangeTag,
+      fields: [asset.fieldName : Raw.Field(value: assetDefinition)]
+    )
+    
+    let operation = Raw.Operation(record: rawRecord)
+    let request = Raw.Request(zoneID: Raw.ZoneID(name: name), operations: [operation])
+    
+    return try await post(to: "/records/modify", body: request)
+  }
+
+  private func createAssetRecord(asset: AssetUpload) async throws -> AssetUploadTarget? {
+    let upload = Raw.Request(asset: asset)
+    let (data, response) = try await performRequest(.post, path: "/assets/upload", body: upload, parameters: [:])
+    
+    struct TokensList: Decodable {
+      let tokens: [AssetUploadTarget]
+    }
+    
+    let list = try decoder.decode(TokensList.self, from: data)
+    return list.tokens.first
+  }
+  
+  private func uploadAssetData(_ data: Data, with target: AssetUploadTarget) async throws -> AssetFileDefinition {
+    struct UploadResponse: Decodable {
+      let singleFile: AssetFileDefinition
+    }
+    
+    let response: UploadResponse = try await send(raw: data, to: target.url)
+    return response.singleFile
+  }
+
+  
   private func performRequest(with body: Raw.Request, completion: @escaping ((Result<RecordsCursor, Error>) -> Void)) {
     fatalError()
     //let request = QueryRecordsRequest(body: body, database: database, variables: variables)
@@ -184,11 +226,7 @@ public struct Zone: Sendable {
     //  }
     //}
   }
-  
-  func get(path: String, parameters: [String: String]) async throws -> RecordsCursor {
-    try await perform(.get, path: path, parameters: parameters)
-  }
-  
+    
   func post(to path: String, body: Raw.Request, parameters: [String: String] = [:]) async throws -> RecordsCursor {
     try await perform(.post, path: path, body: body, parameters: parameters)
   }
@@ -198,7 +236,7 @@ public struct Zone: Sendable {
     case get = "GET"
   }
   
-  private func perform(_ method: Method, path: String, body: Raw.Request? = nil, parameters: [String: String]) async throws -> RecordsCursor {
+  private func performRequest(_ method: Method, path: String, body: Raw.Request? = nil, parameters: [String: String]) async throws -> (Data, URLResponse) {
     let baseURL = URL(string: "https://api.apple-cloudkit.com/database/1/")!
     let fullQueryPath = "\(variables.container)/\(variables.env.rawValue)/\(database.rawValue)\(path)"
     var components = URLComponents(url: baseURL, resolvingAgainstBaseURL: true)!
@@ -237,8 +275,11 @@ public struct Zone: Sendable {
       }
     }
     
-    
-    let (data, response) = try await variables.fetch.fetch(request as URLRequest)
+    return try await variables.fetch.fetch(request as URLRequest)
+  }
+  
+  private func perform(_ method: Method, path: String, body: Raw.Request? = nil, parameters: [String: String]) async throws -> RecordsCursor {
+    let (data, response) = try await performRequest(method, path: path, body: body, parameters: parameters)
 
     if let token = variables.auth as? TokenAuthenticator {
       token.markToken(from: response)
@@ -290,5 +331,19 @@ public struct Zone: Sendable {
     } else {
       return fallback
     }
+  }
+  
+  private func send<R: Decodable>(raw data: Data, to url: URL) async throws -> R {
+    Logging.log("Send raw data to \(url)")
+    let request = NSMutableURLRequest(url: url)
+    request.httpMethod = "POST"
+    request.httpBody = data
+    request.setValue("application/octet-stream", forHTTPHeaderField: "Content-Type")
+        
+    let (data, response) = try await variables.fetch.fetch(request as URLRequest)
+    if let string = String(data: data, encoding: .utf8) {
+      Logging.verbose(string)
+    }
+    return try decoder.decode(R.self, from: data)
   }
 }

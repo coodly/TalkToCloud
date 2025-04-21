@@ -51,6 +51,7 @@ extension Raw {
     var reference: CloudReference? = nil
     var referenceList: [CloudReference]? = nil
     var assetDownload: AssetFileDefinition?
+    var value: AssetFileDefinition?
 
     init(from decoder: Decoder) throws {
       let values = try decoder.container(keyedBy: CodingKeys.self)
@@ -118,7 +119,7 @@ extension Raw {
       case .assetId where assetDownload?.receipt != nil:
         try container.encode(assetDownload, forKey: .value)
       case .assetId:
-        break
+        try container.encode(value, forKey: .value)
       case .unknownList:
         try container.encode(referenceList, forKey: .value)
       }
@@ -155,6 +156,9 @@ extension Raw.Field {
     } else if let value = value as? CloudReference {
       self.type = .reference
       self.reference = value
+    } else if let value = value as? AssetFileDefinition {
+      self.type = .assetId
+      self.value = value
     } else {
       fatalError(String(describing: Swift.type(of: value)))
     }

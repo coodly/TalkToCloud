@@ -17,7 +17,7 @@
 import Foundation
 
 extension Raw {
-  internal struct ZoneID: Codable {
+  internal struct ZoneID: Codable, Sendable {
     let zoneName: String
     let ownerRecordName: String?
     let zoneType: String?
