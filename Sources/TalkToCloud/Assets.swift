@@ -45,11 +45,11 @@ internal struct AssetUploadResponse: Codable {
   internal let singleFile: AssetFileDefinition
 }
 
-public struct AssetFileDefinition: Codable {
-  let wrappingKey: String
+public struct AssetFileDefinition: Codable, Sendable {
+  let wrappingKey: String?
   let fileChecksum: String
   let receipt: String?
-  let referenceChecksum: String
+  let referenceChecksum: String?
   let size: Int
   let downloadURL: String?
 

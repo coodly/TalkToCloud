@@ -169,6 +169,9 @@ internal class RecordDecoder: Decoder {
       if T.self == [Int64].self {
         return try field(for: key).int64List as! T
       }
+      if T.self == AssetFileDefinition.self {
+        return try field(for: key).assetDownload as! T
+      }
             
       fatalError(key.stringValue)
     }

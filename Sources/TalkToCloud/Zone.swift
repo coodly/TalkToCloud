@@ -81,7 +81,7 @@ public struct Zone: Sendable {
             
       switch result {
       case .success(let response):
-        let cursor = RecordsCursor(records: response.received, deleted: response.deleted, errors: response.errors, moreComing: false, syncToken: nil, nextPage: { nil })
+        let cursor = RecordsCursor(records: response.received, deleted: response.deleted, errors: response.errors, moreComing: false, syncToken: nil, nextPage: { nil })
         completion(.success(cursor))
       case .failure(let error):
         completion(.failure(error))
@@ -109,7 +109,7 @@ public struct Zone: Sendable {
             
       switch result {
       case .success(let response):
-        let cursor = RecordsCursor(records: response.received, deleted: response.deleted, errors: response.errors, moreComing: false, syncToken: nil, nextPage: { nil })
+        let cursor = RecordsCursor(records: response.received, deleted: response.deleted, errors: response.errors, moreComing: false, syncToken: nil, nextPage: { nil })
         completion(.success(cursor))
       case .failure(let error):
         completion(.failure(error))
