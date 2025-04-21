@@ -24,11 +24,11 @@ final class FilterEncodeTests: XCTestCase {
     let expected =
       """
       {
+        "comparator" : "EQUALS",
         "fieldName" : "tmdbID",
         "fieldValue" : {
           "value" : 123
-        },
-        "comparator" : "EQUALS"
+        }
       }
       """
     try AssertEncoded(object: checked, expected: expected)
@@ -40,13 +40,14 @@ final class FilterEncodeTests: XCTestCase {
       """
       [
         {
+          "comparator" : "EQUALS",
           "fieldName" : "tmdbID",
           "fieldValue" : {
             "value" : 123
-          },
-          "comparator" : "EQUALS"
+          }
         },
         {
+          "comparator" : "IN",
           "fieldName" : "recordName",
           "fieldValue" : {
             "value" : [
@@ -54,8 +55,7 @@ final class FilterEncodeTests: XCTestCase {
               "bake",
               "shake"
             ]
-          },
-          "comparator" : "IN"
+          }
         }
       ]
       """
@@ -64,10 +64,10 @@ final class FilterEncodeTests: XCTestCase {
 
   private func AssertEncoded<Checked: Encodable>(object: Checked, expected: String, file: StaticString = #file, line: UInt = #line) throws {
     let encoder = JSONEncoder()
-    encoder.outputFormatting = .prettyPrinted
+    encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
 
     let data = try encoder.encode(object)
     let string = String(data: data, encoding: .utf8)
-    XCTAssertNoDifference(expected, string, file: file, line: line)
+    expectNoDifference(expected, string, filePath: file, line: line)
   }
 }
