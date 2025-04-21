@@ -159,7 +159,6 @@ public struct Zone: Sendable {
     }
     
     let assetDefinition = try await uploadAssetData(asset.data, with: target)
-    dump(asset)
     var rawRecord = Raw.SavedRecord(
       recordName: attachedTo.recordName,
       recordType: Record.recordType,
