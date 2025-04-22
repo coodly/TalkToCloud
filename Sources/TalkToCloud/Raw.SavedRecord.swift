@@ -20,7 +20,7 @@ extension Raw {
   internal struct SavedRecord: Encodable, Sendable {
     let recordName: String
     let recordType: String
-    let recordChangeTag: String?
+    var recordChangeTag: String?
     let fields: [String: Raw.Field]
 
     internal func replacing(fields: [String: Raw.Field]) -> SavedRecord {

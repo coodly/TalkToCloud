@@ -193,6 +193,22 @@ public struct Zone: Sendable {
     return response.singleFile
   }
 
+  public func copyRecords(from cursor: RecordsCursor) async throws -> RecordsCursor {
+    Logging.verbose("Copy \(cursor.numberOfRecords) records")
+    let existing = try await lookup(names: cursor.records.map(\.recordName))
+    Logging.verbose("Have \(existing.numberOfRecords) existing")
+    var saved: [Raw.SavedRecord] = []
+    for record in cursor.records {
+      var save = Raw.SavedRecord(record: record)
+      save.recordChangeTag = existing.records.first(where: { $0.recordName == record.recordName })?.recordChangeTag
+      saved.append(save)
+    }
+    
+    let operations = saved.map(Raw.Operation.init(record:))
+    let request = Raw.Request(zoneID: Raw.ZoneID(name: name), operations: operations)
+
+    return try await post(to: "/records/modify", body: request)
+  }
   
   private func performRequest(with body: Raw.Request, completion: @escaping ((Result<RecordsCursor, Error>) -> Void)) {
     fatalError()
