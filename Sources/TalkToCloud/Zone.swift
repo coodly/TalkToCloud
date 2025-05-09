@@ -36,7 +36,7 @@ public struct Zone: Sendable {
     self.variables = variables
   }
     
-  public func query(recordType: String, limit: Int? = nil, desiredKeys: [String]? = nil, filter: Filter? = nil, sort: Sort? = nil) async throws -> RecordsCursor {
+  public func query(recordType: String, limit: Int? = nil, desiredKeys: [String]? = nil, filter: Filter? = nil, sort: Sort? = nil, syncToken: String? = nil) async throws -> RecordsCursor {
     
     Logging.log("Query: \(recordType)")
     
@@ -47,8 +47,12 @@ public struct Zone: Sendable {
     let body = Raw.Request(zoneID: Raw.ZoneID(name: name), query: query)
       .with(resultsLimit: limit)
       .with(desiredKeys: desiredKeys)
-
-    return try await post(to: "/records/query", body: body)
+    
+    if let syncToken {
+      return try await nextPage(with: body, continuation: syncToken)
+    } else {
+      return try await post(to: "/records/query", body: body)
+    }
   }
 //  public func query(recordType: String, limit: Int? = nil, desiredKeys: [String]? = nil, filter: Filter? = nil, sort: Sort? = nil, completion: @escaping ((Result<RecordsCursor, Error>) -> Void)) {
 //        
@@ -321,7 +325,7 @@ public struct Zone: Sendable {
         deleted: response.deleted,
         errors: response.errors,
         moreComing: response.continuationMarker != nil,
-        syncToken: nil,
+        syncToken: response.continuationMarker,
         nextPage: continuation
       )
       return cursor
