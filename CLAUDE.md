@@ -19,36 +19,36 @@ swift test --filter TalkToCloudTests.RecordDecodeTests/testMappingDecode
 
 TalkToCloud is a Swift library for server-to-server CloudKit communication via Apple's CloudKit Web Services API.
 
-### Core Components
+### API Layers
 
-**CloudContainer** (`CloudContainer.swift`) - Main entry point for CloudKit operations. Handles CRUD operations (save, delete, fetch, lookup) against CloudKit databases. Supports public, private, and shared databases.
+**New Async API** (preferred):
+```
+CloudKit -> Container -> Database -> Zone
+```
+- `CloudKit` - Entry point providing `development` and `production` containers
+- `Container` - Provides `public` and `private` databases
+- `Database` - Provides `default` zone or custom zones via `zone(name:)`
+- `Zone` - Async methods for CRUD: `query()`, `modify()`, `delete()`, `lookup()`, `upload()`
 
-**Authentication** - Two authenticator types:
-- `PrivateKeyAuthenticator` - Server-to-server auth using ECDSA signatures (requires .key and .pem files in Config/)
-- `TokenAuthenticator` - Web token-based auth for user sessions
+**Legacy Callback API** (being phased out):
+- `CloudContainer` - Callback-based API with similar operations
+- `Commander<Command>` - CLI runner with container consumer protocols
 
-**Record Protocols**:
-- `RemoteRecord` - Legacy protocol using Mirror reflection for field serialization
-- `CloudDecodable` - Modern Decodable-based protocol with `RecordDecoder` for deserializing CloudKit records
+### Record Protocols
+
+- `CloudDecodable` - Modern Decodable-based protocol with `RecordDecoder`
 - `CloudEncodable` - Encodable protocol for serializing to CloudKit format
+- `RemoteRecord` - Legacy protocol using Mirror reflection (callback API)
 
-**Network Layer**:
-- `NetworkFetch` - Sendable struct wrapping async URLSession calls
-- `Request<T>` - Base class for typed API requests
-- Platform-specific fetch implementations: `AsyncSystemFetch` (macOS), `CommandLineFetch` (Linux via curl)
+### Authentication
 
-**Container Consumer Protocols** - Dependency injection pattern:
-- `ContainerConsumer` - Single container, environment from CLI args
-- `DevelopmentConsumer` / `ProductionConsumer` - Explicit environment containers
+- `PrivateKeyAuthenticator` - Server-to-server auth using ECDSA signatures
+- `TokenAuthenticator` - Web token-based auth for user sessions
 
 ### Raw Namespace
 
-The `Raw` namespace contains Codable structs that map directly to CloudKit Web Services JSON:
-- `Raw.Record`, `Raw.Field`, `Raw.ZoneID`, `Raw.Operation`, etc.
-
-### CLI Usage Pattern
-
-The library is designed for CLI tools. Create a `Command` conforming type, use consumer protocols for container injection, and run via `Commander<YourCommand>`.
+Codable structs mapping directly to CloudKit Web Services JSON:
+- `Raw.Record`, `Raw.Field`, `Raw.ZoneID`, `Raw.Operation`, `Raw.Request`, `Raw.Response`, etc.
 
 ### Configuration
 
