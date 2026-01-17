@@ -125,7 +125,46 @@ public struct Zone: Sendable {
     let body = Raw.Request(zoneID: Raw.ZoneID(name: name), lookup: lookup).with(desiredKeys: desiredKeys)
     return try await post(to: "/records/lookup", body: body)
   }
-  
+
+  public func changes(since token: String?) async throws -> RecordsCursor {
+    Logging.log("Fetch changes in \(name) since \(token ?? "nil")")
+
+    var zone = Raw.Zone(zoneID: Raw.ZoneID(name: name))
+    zone.syncToken = token
+
+    let body = Raw.Request().query(in: zone, since: token)
+    let (data, _) = try await performer.perform(.post, path: "/changes/zone", body: body)
+    let response = try performer.decode(Raw.ZoneChangesList.self, from: data)
+
+    guard let zoneChanges = response.changes(in: zone) else {
+      Logging.log("No changes in zone \(name)")
+      return RecordsCursor(
+        records: [],
+        deleted: [],
+        errors: [],
+        moreComing: false,
+        syncToken: token,
+        nextPage: { nil }
+      )
+    }
+
+    let nextPage: @Sendable () async throws -> RecordsCursor? = {
+      if zoneChanges.moreComing {
+        return try await self.changes(since: zoneChanges.syncToken)
+      }
+      return nil
+    }
+
+    return RecordsCursor(
+      records: zoneChanges.received,
+      deleted: zoneChanges.deleted,
+      errors: zoneChanges.errors,
+      moreComing: zoneChanges.moreComing,
+      syncToken: zoneChanges.syncToken,
+      nextPage: nextPage
+    )
+  }
+
   //public func lookup(names: [String], desiredKeys: [String]? = nil, completion: @escaping ((Result<RecordsCursor, Error>) -> Void)) {
   //  let lookup = names.map({ Raw.Lookup(recordName: $0) })
   //  let body = Raw.Request(zoneID: Raw.ZoneID(name: name), lookup: lookup).with(desiredKeys: desiredKeys)

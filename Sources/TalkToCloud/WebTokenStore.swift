@@ -17,9 +17,9 @@
 import Foundation
 
 public struct WebTokenStore: Sendable {
-  private let onGet: (() -> String?)
-  private let onSet: ((String?) -> Void)
-  public init(onGet: @escaping (() -> String?), onSet: @escaping ((String?) -> Void)) {
+  private let onGet: @Sendable () -> String?
+  private let onSet: @Sendable (String?) -> Void
+  public init(onGet: @escaping @Sendable () -> String?, onSet: @escaping @Sendable (String?) -> Void) {
     self.onGet = onGet
     self.onSet = onSet
   }

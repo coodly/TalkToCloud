@@ -17,12 +17,12 @@
 import Foundation
 
 public struct ZoneTokenStore: Sendable {
-  private let onKnownToken: ((CloudZone) -> String?)
-  private let onMarkToken: ((String, CloudZone) -> Void)
+  private let onKnownToken: @Sendable (CloudZone) -> String?
+  private let onMarkToken: @Sendable (String, CloudZone) -> Void
 
   public init(
-    onKnownToken: @escaping ((CloudZone) -> String?),
-    onMarkToken: @escaping ((String, CloudZone) -> Void)
+    onKnownToken: @escaping @Sendable (CloudZone) -> String?,
+    onMarkToken: @escaping @Sendable (String, CloudZone) -> Void
   ) {
     self.onKnownToken = onKnownToken
     self.onMarkToken = onMarkToken
