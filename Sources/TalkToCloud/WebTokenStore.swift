@@ -16,7 +16,7 @@
 
 import Foundation
 
-public struct WebTokenStore {
+public struct WebTokenStore: Sendable {
   private let onGet: (() -> String?)
   private let onSet: ((String?) -> Void)
   public init(onGet: @escaping (() -> String?), onSet: @escaping ((String?) -> Void)) {

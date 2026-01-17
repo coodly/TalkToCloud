@@ -16,7 +16,7 @@
 
 import Foundation
 
-public struct ZoneTokenStore {
+public struct ZoneTokenStore: Sendable {
   private let onKnownToken: ((CloudZone) -> String?)
   private let onMarkToken: ((String, CloudZone) -> Void)
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-public struct Database {
+public struct Database: Sendable {
   private let variables: Variables
   private let database: CloudDatabase
   internal init(identifier: String, env: Environment, database: CloudDatabase, auth: Authenticator, fetch: NetworkFetch) {
@@ -28,5 +28,11 @@ public struct Database {
 
   public func zone(name: String) -> Zone {
     Zone(name: name, database: database, variables: variables)
+  }
+
+  public func currentUser() async throws -> User {
+    let performer = RequestPerformer(variables: variables, database: database)
+    let (data, _) = try await performer.perform(.get, path: "/users/current")
+    return try performer.decode(User.self, from: data)
   }
 }

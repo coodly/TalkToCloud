@@ -39,4 +39,19 @@ public struct CloudKit {
       fetch: fetch
     )
   }
+  
+  public init(identifier: String, fetch: NetworkFetch, devAuth: Authenticator, prodAuth: Authenticator) {
+    development = Container(
+      identifier: identifier,
+      env: .development,
+      auth: devAuth,
+      fetch: fetch
+    )
+    production = Container(
+      identifier: identifier,
+      env: .production,
+      auth: prodAuth,
+      fetch: fetch
+    )
+  }
 }

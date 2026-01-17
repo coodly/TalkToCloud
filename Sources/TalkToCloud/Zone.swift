@@ -24,16 +24,15 @@ extension Zone {
 }
 
 public struct Zone: Sendable {
-  private let decoder = JSONDecoder()
-  private let encoder = JSONEncoder()
-  
   internal let name: String
   private let database: CloudDatabase
   private let variables: Variables
+  private let performer: RequestPerformer
   internal init(name: String, database: CloudDatabase, variables: Variables) {
     self.name = name
     self.database = database
     self.variables = variables
+    self.performer = RequestPerformer(variables: variables, database: database)
   }
     
   public func query(recordType: String, limit: Int? = nil, desiredKeys: [String]? = nil, filter: Filter? = nil, sort: Sort? = nil, syncToken: String? = nil) async throws -> RecordsCursor {
@@ -178,13 +177,13 @@ public struct Zone: Sendable {
 
   private func createAssetRecord(asset: AssetUpload) async throws -> AssetUploadTarget? {
     let upload = Raw.Request(asset: asset)
-    let (data, response) = try await performRequest(.post, path: "/assets/upload", body: upload, parameters: [:])
-    
+    let (data, _) = try await performer.perform(.post, path: "/assets/upload", body: upload)
+
     struct TokensList: Decodable {
       let tokens: [AssetUploadTarget]
     }
-    
-    let list = try decoder.decode(TokensList.self, from: data)
+
+    let list = try performer.decode(TokensList.self, from: data)
     return list.tokens.first
   }
   
@@ -246,110 +245,27 @@ public struct Zone: Sendable {
     //}
   }
     
-  func post(to path: String, body: Raw.Request, parameters: [String: String] = [:]) async throws -> RecordsCursor {
-    try await perform(.post, path: path, body: body, parameters: parameters)
-  }
-  
-  private enum Method: String {
-    case post = "POST"
-    case get = "GET"
-  }
-  
-  private func performRequest(_ method: Method, path: String, body: Raw.Request? = nil, parameters: [String: String]) async throws -> (Data, URLResponse) {
-    let baseURL = URL(string: "https://api.apple-cloudkit.com/database/1/")!
-    let fullQueryPath = "\(variables.container)/\(variables.env.rawValue)/\(database.rawValue)\(path)"
-    var components = URLComponents(url: baseURL, resolvingAgainstBaseURL: true)!
-    components.path = components.path.appending(fullQueryPath)
-    
-    var url = components.url!
-    
-    for (name, value) in variables.auth.params {
-      url = url.appending(param: name, value: value)
-    }
+  func post(to path: String, body: Raw.Request) async throws -> RecordsCursor {
+    let (data, _) = try await performer.perform(.post, path: path, body: body)
+    let response = try performer.decode(Raw.Response.self, from: data)
 
-    Logging.log("\(method.rawValue) to \(url.absoluteString)")
-    
-    let request = NSMutableURLRequest(url: url)
-    request.httpMethod = method.rawValue
-    
-    request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-    
-    if let body {
-      do {
-        let data = try encoder.encode(body)
-        request.httpBody = data
-    
-        let additionalHeaders = variables.auth.signedHeaders(for: data, query: url.path)
-        for (name, value) in additionalHeaders {
-          request.addValue(value, forHTTPHeaderField: name)
-        }
-    
-        if let string = String(data: data, encoding: .utf8) {
-          Logging.verbose("Body:")
-          Logging.verbose(string)
-        }
-      } catch {
-        Logging.error("Encode body error: \(error)")
-        fatalError()
+    let continuation: @Sendable () async throws -> RecordsCursor?
+    if let token = response.continuationMarker {
+      continuation = {
+        try await self.nextPage(with: body, continuation: token)
       }
-    }
-    
-    return try await variables.fetch.fetch(request as URLRequest)
-  }
-  
-  private func perform(_ method: Method, path: String, body: Raw.Request? = nil, parameters: [String: String]) async throws -> RecordsCursor {
-    let (data, response) = try await performRequest(method, path: path, body: body, parameters: parameters)
-
-    if let token = variables.auth as? TokenAuthenticator {
-      token.markToken(from: response)
-    }
-        
-    if let string = String(data: data, encoding: .utf8) {
-      Logging.verbose(string)
-    }
-        
-    let result: Result<Raw.Response, any Error> = decodeValue(from: data)
-    switch result {
-    case .success(let response):
-      let continuation: @Sendable () async throws -> RecordsCursor?
-      if let token = response.continuationMarker {
-        continuation = {
-          try await self.nextPage(with: body!, continuation: token)
-        }
-      } else {
-        continuation = { nil }
-      }
-              
-      let cursor = RecordsCursor(
-        records: response.received,
-        deleted: response.deleted,
-        errors: response.errors,
-        moreComing: response.continuationMarker != nil,
-        syncToken: response.continuationMarker,
-        nextPage: continuation
-      )
-      return cursor
-    case .failure(let error):
-      throw error
-    }
-  }
-    
-  private func decodeValue<T: Decodable>(from data: Data) -> Result<T, Error> {
-    do {
-      let value = try decoder.decode(T.self, from: data)
-      return .success(value)
-    } catch {
-      Logging.error("Decode error: \(error)")
-      return .failure(decodeError(from: data, fallback: error))
-    }
-  }
-    
-  private func decodeError(from data: Data, fallback: Error) -> Error {
-    if let error = try? decoder.decode(Raw.Error.self, from: data) {
-      return error.presented
     } else {
-      return fallback
+      continuation = { nil }
     }
+
+    return RecordsCursor(
+      records: response.received,
+      deleted: response.deleted,
+      errors: response.errors,
+      moreComing: response.continuationMarker != nil,
+      syncToken: response.continuationMarker,
+      nextPage: continuation
+    )
   }
   
   private func send<R: Decodable>(raw data: Data, to url: URL) async throws -> R {
@@ -358,11 +274,11 @@ public struct Zone: Sendable {
     request.httpMethod = "POST"
     request.httpBody = data
     request.setValue("application/octet-stream", forHTTPHeaderField: "Content-Type")
-        
-    let (data, response) = try await variables.fetch.fetch(request as URLRequest)
-    if let string = String(data: data, encoding: .utf8) {
+
+    let (responseData, _) = try await variables.fetch.fetch(request as URLRequest)
+    if let string = String(data: responseData, encoding: .utf8) {
       Logging.verbose(string)
     }
-    return try decoder.decode(R.self, from: data)
+    return try performer.decode(R.self, from: responseData)
   }
 }
