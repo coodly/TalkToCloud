@@ -318,6 +318,12 @@ public struct Zone: Sendable {
     if let string = String(data: responseData, encoding: .utf8) {
       Logging.verbose(string)
     }
-    return try performer.decode(R.self, from: responseData)
+    do {
+      return try performer.decode(R.self, from: responseData)
+    } catch {
+      Logging.error(error)
+      Logging.error(String(data: responseData, encoding: .utf8) ?? "")
+      throw error
+    }
   }
 }

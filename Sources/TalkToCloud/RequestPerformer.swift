@@ -96,6 +96,7 @@ internal struct RequestPerformer: Sendable {
       return try decoder.decode(type, from: data)
     } catch {
       Logging.error("Decode error: \(error)")
+      Logging.error(String(data: data, encoding: .utf8) ?? "")
       if let cloudError = try? decoder.decode(Raw.Error.self, from: data) {
         throw cloudError.presented
       }
